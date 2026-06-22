@@ -1,4 +1,5 @@
-using Agents, Random
+using Agents, Random, CairoMakie
+
 
 @agent struct Sheep(GridAgent{2})
     energy::Float64
@@ -93,3 +94,96 @@ function first_sheep_in_position(pos, model)
     j = findfirst(id -> model[id] isa Sheep, ids)
     return isnothing(j) ? nothing : model[ids[j]]::Sheep
 end
+
+function eat!(sheep::Sheep, model)
+    if model.fully_grown[sheep.pos...]
+        sheep.energy += sheep.Δenergy
+        model.fully_grown[sheep.pos...] = false
+    end
+    return
+end
+
+function eat!(wolf::Wolf, sheep::Sheep, model)
+    remove_agent!(sheep, model)
+    wolf.energy += wolf.Δenergy
+    return
+end
+
+function grass_step!(model)
+    return @inbounds for p in positions(model) # we don't have to enable bound checking
+        if !(model.fully_grown[p...])
+            if model.countdown[p...] ≤ 0
+                model.fully_grown[p...] = true
+                model.countdown[p...] = model.regrowth_time
+            else
+                model.countdown[p...] -= 1
+            end
+        end
+    end
+end
+
+sheepwolfgrass = initialize_model()
+
+offset(a) = a isa Sheep ? (-0.1, -0.1 * rand()) : (+0.1, +0.1 * rand())
+ashape(a) = a isa Sheep ? :circle : :utriangle
+acolor(a) = a isa Sheep ? RGBAf(1.0, 1.0, 1.0, 0.8) : RGBAf(0.2, 0.2, 0.3, 0.8)
+grasscolor(model) = model.countdown ./ model.regrowth_time
+heatkwargs = (colormap = [:brown, :green], colorrange = (0, 1))
+
+plotkwargs = (;
+    agent_color = acolor,
+    agent_size = 25,
+    agent_marker = ashape,
+    offset,
+    agentsplotkwargs = (strokewidth = 1.0, strokecolor = :black),
+    heatarray = grasscolor,
+    heatkwargs = heatkwargs,
+)
+
+fig, ax, abmobs = abmplot(sheepwolfgrass; plotkwargs...)
+fig
+
+sheep(a) = a isa Sheep
+wolf(a) = a isa Wolf
+count_grass(model) = count(model.fully_grown)
+
+stable_params = (;
+    n_sheep = 140,
+    n_wolves = 20,
+    dims = (50, 50),
+    Δenergy_sheep = 50,
+    sheep_reproduce = 0.5,
+    wolf_reproduce = 0.01,
+    Δenergy_wolf = 300,
+    seed = 71758,
+)
+
+sheepwolfgrass = initialize_model(; stable_params...)
+adata = [(sheep, count), (wolf, count)]
+mdata = [count_grass]
+adf, mdf = run!(sheepwolfgrass, 4000; adata, mdata)
+plot_population_timeseries(adf, mdf)
+
+function plot_population_timeseries(adf, mdf)
+    figure = Figure(size = (600, 400))
+    ax = figure[1, 1] = Axis(figure; xlabel = "Step", ylabel = "Population")
+    sheepl = lines!(ax, adf.time, adf.count_sheep, color = :cornsilk4)
+    wolfl = lines!(ax, adf.time, adf.count_wolf, color = RGBAf(0.2, 0.2, 0.3))
+    grassl = lines!(ax, mdf.time, mdf.count_grass, color = :green)
+    figure[1, 2] = Legend(figure, [sheepl, wolfl, grassl], ["Sheep", "Wolves", "Grass"])
+    return figure
+end
+
+
+plot_population_timeseries(adf, mdf)
+
+sheepwolfgrass = initialize_model(; stable_params...)
+
+abmvideo(
+    "sheepwolf.mp4",
+    sheepwolfgrass;
+    frames = 1000,
+    framerate = 8,
+    title = "Sheep Wolf Grass",
+    plotkwargs...,
+)

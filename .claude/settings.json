@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(julia --project=. /tmp/adata_opt2.jl)",
+      "Bash(command -v ffmpeg)",
+      "Bash(julia --project=/home/sosno/Git/abm_sosno /tmp/video_test.jl)"
+    ]
+  }
+}

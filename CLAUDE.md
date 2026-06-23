@@ -53,6 +53,21 @@ for agent in model.agents
 end
 ```
 
+### Julia Syntax Gotchas
+
+**`!` in identifiers vs the `!=` operator** — Julia's lexer is greedy, so when a
+name ending in `!` is immediately followed by `=`, the `!=` is tokenized as the
+*not-equal* operator. This silently breaks keyword arguments and assignments:
+
+```julia
+StandardABM(...; agent_step!=forager_step!)   # parsed as `agent_step != forager_step!`  → syntax error
+StandardABM(...; agent_step! = forager_step!) # correct — note the spaces
+```
+
+**Always put spaces around `=` when the left side ends in `!`** (e.g.
+`agent_step! = `, `model_step! = `). This applies to any `!`-suffixed binding,
+not just Agents.jl keywords.
+
 ### Package Management
 
 - **Add a package**: `] add PackageName` (from REPL) or `using Pkg; Pkg.add("PackageName")`

@@ -2,7 +2,7 @@
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "f79c5a80c7db26e4e2c7ec480c93a9a59b367e9a"
+project_hash = "5c85fe1b191f5d4051e3efbb6a0111cff38e01f6"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -383,6 +383,7 @@ version = "1.11.0"
 [[deps.Distributions]]
 deps = ["AliasTables", "FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SpecialFunctions", "Statistics", "StatsAPI", "StatsBase", "StatsFuns"]
 git-tree-sha1 = "96f76dcd6cc75cf8eb49109123868499d413f526"
+pinned = true
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
 version = "0.25.126"
 

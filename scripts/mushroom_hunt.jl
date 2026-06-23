@@ -17,15 +17,15 @@ end
 @agent struct Mushroom(ContinuousAgent{2, T})
 end
 
-dims = (50, 50)
-speed = 0.2
+dims = (200, 200)
+speed = 1
 dt = 1
 sight_radius = 1
 max_rotation_searching = π / 16
 max_rotation_foraging = π / 2
 space = ContinuousSpace(dims, periodic = true)
-n_clusters = 4
-n_mushrooms_per_cluster = 10
+n_clusters = 16
+n_mushrooms_per_cluster = 20
 
 function forager_step!(forager::Forager, model::StandardABM)
     # First check if there is food nearby. nearby_ids returns a lazy iterator,
@@ -79,11 +79,11 @@ model = StandardABM(
 time_since_last_found = 100
 θ_init = 2π * rand(abmrng(model))
 vel = speed * SVector(cos(θ_init), sin(θ_init))
-add_agent!(Forager, model, vel, time_since_last_found, 0, 10)
+add_agent!(Forager, model, vel, time_since_last_found, 0, 0)
 
 θ_init = 2π * rand(abmrng(model))
 vel = speed * SVector(cos(θ_init), sin(θ_init))
-add_agent!(Forager, model, vel, time_since_last_found, 0, 100)
+add_agent!(Forager, model, vel, time_since_last_found, 0, 50)
 
 for _ in 1:n_clusters
     center = random_position(model)
@@ -106,21 +106,12 @@ plotkwargs = (;
     agentsplotkwargs = (strokewidth = 1.0, strokecolor = :black),
 )
 
-fig, ax, abmobs = abmplot(model; plotkwargs...)
-
-vision = lift(abmobs.model) do m
-    [Circle(Point2f(a.pos), m.sight_radius) for a in allagents(m) if a isa Forager]
-end
-
-poly!(ax, vision; color = (:yellow, 0.1), strokecolor = :blue, strokewidth = 1)
-
-fig
-
 eaten(a) = a.eaten_mushrooms
-fast(a) = a isa Forager && a.time_strategy == 10
-slow(a) = a isa Forager && a.time_strategy == 100
+fast(a) = a isa Forager && a.time_strategy == 0
+slow(a) = a isa Forager && a.time_strategy == 50
 adata = [(eaten, sum, fast), (eaten, sum, slow)]
-adf, mdf = run!(model, 40; adata)
+
+adf, mdf = run!(initialize(;seed=4111), 2000; adata)
 
 # --- Video: ABM space (left) + mushrooms-eaten-by-strategy panel (right) ---
 # `abmvideo` only renders the space, so we build the figure ourselves with
@@ -132,7 +123,7 @@ function initialize(; seed = 1234)
     m = StandardABM(Union{Forager, Mushroom}, s;
         agent_step! = forager_step!, properties,
         rng = MersenneTwister(seed), scheduler = Schedulers.Randomly(), warn = false)
-    for ts in (10, 100)
+    for ts in (0, 50)
         θ = 2π * rand(abmrng(m))
         add_agent!(Forager, m, speed * SVector(cos(θ), sin(θ)), 100, 0, ts)
     end
@@ -146,17 +137,23 @@ function initialize(; seed = 1234)
     return m
 end
 
+
 vmodel = initialize()
 vfig, vax, vabmobs = abmplot(vmodel;
     adata, add_controls = false, figure = (size = (1100, 560),), plotkwargs...)
+
+vision = lift(vabmobs.model) do m
+    [Circle(Point2f(a.pos), m.sight_radius) for a in allagents(m) if a isa Forager]
+end
+poly!(vax, vision; color = (:yellow, 0.1), strokecolor = :blue, strokewidth = 1)
 
 # Right-hand data panel tracking cumulative mushrooms eaten, per strategy.
 # Column names come from `dataname`: "sum_eaten_fast" / "sum_eaten_slow".
 data_ax = Axis(vfig[1, 2]; xlabel = "time", ylabel = "mushrooms eaten")
 fast_curve = @lift(Point2f.($(vabmobs.adf).time, $(vabmobs.adf)[:, "sum_eaten_fast"]))
 slow_curve = @lift(Point2f.($(vabmobs.adf).time, $(vabmobs.adf)[:, "sum_eaten_slow"]))
-scatterlines!(data_ax, fast_curve; color = :gold, label = "fast (time_strategy=10)")
-scatterlines!(data_ax, slow_curve; color = :blue, label = "slow (time_strategy=100)")
+scatterlines!(data_ax, fast_curve; color = :gold, label = "fast (time_strategy=0)")
+scatterlines!(data_ax, slow_curve; color = :blue, label = "slow (time_strategy=50)")
 axislegend(data_ax; position = :lt)
 
 frames = 2000

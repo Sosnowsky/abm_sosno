@@ -14,16 +14,16 @@ end
 end
 
 function initialize_model(;
-        n_sheep = 100,
-        n_wolves = 50,
-        dims = (20, 20),
-        regrowth_time = 30,
-        Δenergy_sheep = 4,
-        Δenergy_wolf = 20,
-        sheep_reproduce = 0.04,
-        wolf_reproduce = 0.05,
-        seed = 23182,
-    )
+    n_sheep = 100,
+    n_wolves = 50,
+    dims = (20, 20),
+    regrowth_time = 30,
+    Δenergy_sheep = 4,
+    Δenergy_wolf = 20,
+    sheep_reproduce = 0.04,
+    wolf_reproduce = 0.05,
+    seed = 23182,
+)
 
     rng = MersenneTwister(seed)
     space = GridSpace(dims, periodic = true)
@@ -36,17 +36,22 @@ function initialize_model(;
         regrowth_time = regrowth_time,
     )
     model = StandardABM(
-        Union{Sheep, Wolf}, space;
-        agent_step! = sheepwolf_step!, model_step! = grass_step!,
-        properties, rng, scheduler = Schedulers.Randomly(), warn = false
+        Union{Sheep,Wolf},
+        space;
+        agent_step! = sheepwolf_step!,
+        model_step! = grass_step!,
+        properties,
+        rng,
+        scheduler = Schedulers.Randomly(),
+        warn = false,
     )
     # Add agents
-    for _ in 1:n_sheep
-        energy = rand(abmrng(model), 1:(Δenergy_sheep * 2)) - 1
+    for _ = 1:n_sheep
+        energy = rand(abmrng(model), 1:(Δenergy_sheep*2)) - 1
         add_agent!(Sheep, model, energy, sheep_reproduce, Δenergy_sheep)
     end
-    for _ in 1:n_wolves
-        energy = rand(abmrng(model), 1:(Δenergy_wolf * 2)) - 1
+    for _ = 1:n_wolves
+        energy = rand(abmrng(model), 1:(Δenergy_wolf*2)) - 1
         add_agent!(Wolf, model, energy, wolf_reproduce, Δenergy_wolf)
     end
     # Add grass with random initial growth

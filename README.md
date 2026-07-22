@@ -39,6 +39,26 @@ when patches are **rich enough to chain finds** (keeping the forager in foraging
 mode), and provides little benefit when patches are sparse and tiny, where both
 foragers behave like straight-line searchers most of the time.
 
+## Butterfly corridors — a second model
+
+A separate model (Pe'er et al. 2005) explores **virtual corridors**: narrow paths
+that many butterflies follow even though nothing about the habitat there is
+special. Each butterfly moves over an elevation landscape, stepping to its highest
+neighbouring patch with probability `q` (hilltopping) and to a random neighbour
+otherwise. The corridor is *emergent* — it appears in the cumulative visitation
+map (right) purely from the interplay of this simple rule with the topography.
+See [`butterfly_corridor.md`](butterfly_corridor.md) for the full model summary.
+
+![Butterfly corridor simulation](butterfly_corridor.gif)
+
+How sharp is the corridor? Releasing all butterflies from a single patch and
+measuring the width of the trail they leave — either as `area / radial reach` or
+as the transverse spread of the visited patches (PCA minor axis) — shows the
+corridor tightening monotonically as the uphill bias `q` grows: a diffuse, near-
+random cloud at low `q` collapses to a single deterministic track at `q = 1`.
+
+![Corridor width vs. uphill bias q](butterfly_corridor_width_spatial.png)
+
 ## Layout
 
 - [`src/MushroomHunt.jl`](src/MushroomHunt.jl) — the model: agent types, the
@@ -48,6 +68,12 @@ foragers behave like straight-line searchers most of the time.
   a video (space + live mushrooms-eaten panel).
 - [`scripts/single_run_result.jl`](scripts/single_run_result.jl) — ensemble over
   many seeds, producing the histogram above.
+- [`src/ButterflyCorridor.jl`](src/ButterflyCorridor.jl) — the butterfly-corridor
+  model: the `Butterfly` agent, the hilltopping/random step rule, and `initialize`.
+- [`scripts/butterfly_single_run.jl`](scripts/butterfly_single_run.jl) — one
+  realization rendered to the corridor video/gif above.
+- [`scripts/butterfly_q_sweep.jl`](scripts/butterfly_q_sweep.jl) — sweeps `q` and
+  plots the spatial corridor-width estimators above (no single-run visualization).
 
 ## Running
 

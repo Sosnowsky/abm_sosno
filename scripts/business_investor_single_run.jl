@@ -17,6 +17,7 @@ model_params = (
     dims = (19, 19),
     n_investors = 100,
     T = 5,
+    sensing_radius = 1,
     profit_range = (1.0, 10.0),
     risk_range = (0.01, 0.1),
     seed = 1234,

@@ -39,21 +39,24 @@ utility(wealth, profit, risk, T) = (wealth + T * profit) * (1 - risk)^T
 """
     investor_step!(investor, model)
 
-Phase 1 (repositioning). Among the *empty* Moore-neighbour patches, move to the
-one with the highest utility if it strictly beats staying put; otherwise stay.
-Ties between qualifying neighbours are broken at random.
+Phase 1 (repositioning). Among the *empty* patches within `model.sensing_radius`
+(Chebyshev distance), move to the one with the highest utility if it strictly
+beats staying put; otherwise stay. Ties between qualifying patches are broken at
+random. A `sensing_radius` of 0 leaves no candidates, so the investor never
+relocates; 1 is the original Moore-neighbour rule; larger values let an investor
+jump directly to the best business it can see.
 """
 function investor_step!(investor::Investor, model::StandardABM)
     rng = abmrng(model)
     P, F, T = model.profit, model.risk, model.T
 
     here = investor.pos
-    # Baseline: the utility of staying. A neighbour must strictly beat this to
-    # justify a move, which is what "stay if current is best" means.
+    # Baseline: the utility of staying. A patch must strictly beat this to justify
+    # a move, which is what "stay if current is best" means.
     best_u = utility(investor.wealth, P[here...], F[here...], T)
     candidates = Tuple{Int,Int}[]
 
-    for p in nearby_positions(investor, model, 1)
+    for p in nearby_positions(investor, model, model.sensing_radius)
         isempty(p, model) || continue  # one investor per patch
         u = utility(investor.wealth, P[p...], F[p...], T)
         if u > best_u
@@ -98,6 +101,8 @@ Keyword arguments:
 - `dims`: grid size in patches (default `(19, 19)`).
 - `n_investors`: number of investors (default `100`).
 - `T`: planning horizon in the utility function (default `5`).
+- `sensing_radius`: Chebyshev radius of patches an investor can see and move to
+  each step (default `1`; `0` disables repositioning).
 - `profit_range`: `(lo, hi)` uniform range for each business's profit (default `(1.0, 10.0)`).
 - `risk_range`: `(lo, hi)` uniform range for each business's risk (default `(0.01, 0.1)`).
 - `profit`, `risk`: optional precomputed matrices (override the ranges), e.g. to
@@ -108,6 +113,7 @@ function initialize(;
     dims = (19, 19),
     n_investors = 100,
     T = 5,
+    sensing_radius = 1,
     profit_range = (1.0, 10.0),
     risk_range = (0.01, 0.1),
     profit = nothing,
@@ -124,7 +130,7 @@ function initialize(;
     @assert size(F) == dims "risk matrix must have size $dims"
     @assert n_investors <= prod(dims) "cannot place $n_investors investors on $(prod(dims)) patches"
 
-    properties = (; profit = P, risk = F, T = T)
+    properties = (; profit = P, risk = F, T = T, sensing_radius = sensing_radius)
     # Non-periodic: the business grid has real edges, not a wrap-around torus.
     space = GridSpace(dims, periodic = false)
     model = StandardABM(

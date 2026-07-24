@@ -59,14 +59,34 @@ random cloud at low `q` collapses to a single deterministic track at `q = 1`.
 
 ![Corridor width vs. uphill bias q](butterfly_corridor_width_spatial.png)
 
+## Business investors — a third model
+
+A toy economy on a **19×19 grid of businesses**, each with a fixed **profit** `P`
+and **risk** `F`. Every step, **investors** (white dots, at most one per business)
+hop to the best business they can see — maximising the utility
+`U = (W + T·P)(1 − F)^T` — then bank its profit, except that with probability `F`
+their wealth is wiped to zero. Investors drift toward high-profit, low-risk
+businesses purely from this local rule. See
+[`models/The business investor model.md`](models/The%20business%20investor%20model.md)
+for the full description.
+
+![Business investor simulation](business_investor.gif)
+
+The ensemble experiment sweeps the investors' **sensing radius** (how far they can
+see, 0–5) across many realizations. Most of the payoff comes from being able to
+move at all (`r = 0 → 1`); extra vision beyond that mainly buys **lower risk**,
+with strongly diminishing returns.
+
+![Business investor ensemble: mean wealth, chosen profit and risk over time](business_investor_ensemble.png)
+
 ## Layout
 
 - [`src/MushroomHunt.jl`](src/MushroomHunt.jl) — the model: agent types, the
   stepping rule, and `initialize` (plotting-agnostic, all parameters are keyword
   arguments so it is reusable for scans and ensembles).
-- [`scripts/single_run.jl`](scripts/single_run.jl) — one realization rendered to
-  a video (space + live mushrooms-eaten panel).
-- [`scripts/single_run_result.jl`](scripts/single_run_result.jl) — ensemble over
+- [`scripts/mushroom_single_run.jl`](scripts/mushroom_single_run.jl) — one
+  realization rendered to a video (space + live mushrooms-eaten panel).
+- [`scripts/mushroom_ensemble.jl`](scripts/mushroom_ensemble.jl) — ensemble over
   many seeds, producing the histogram above.
 - [`src/ButterflyCorridor.jl`](src/ButterflyCorridor.jl) — the butterfly-corridor
   model: the `Butterfly` agent, the hilltopping/random step rule, and `initialize`.
@@ -74,13 +94,21 @@ random cloud at low `q` collapses to a single deterministic track at `q = 1`.
   realization rendered to the corridor video/gif above.
 - [`scripts/butterfly_q_sweep.jl`](scripts/butterfly_q_sweep.jl) — sweeps `q` and
   plots the spatial corridor-width estimators above (no single-run visualization).
+- [`src/BusinessInvestor.jl`](src/BusinessInvestor.jl) — the business-investor
+  model: the `Investor` agent, the reposition + accounting steps, and `initialize`.
+- [`scripts/business_investor_single_run.jl`](scripts/business_investor_single_run.jl)
+  — one realization rendered to the gif above.
+- [`scripts/business_investor_ensemble.jl`](scripts/business_investor_ensemble.jl)
+  — sweeps the sensing radius over many seeds, producing the plot above.
 
 ## Running
 
 ```julia
 using Pkg; Pkg.activate(".")   # from the repo root
-include("scripts/single_run.jl")         # generates mushroom_hunt.mp4
-include("scripts/single_run_result.jl")  # generates fraction_slow_hist.png
+include("scripts/mushroom_single_run.jl")           # generates mushroom_hunt.mp4
+include("scripts/mushroom_ensemble.jl")             # generates fraction_slow_hist.png
+include("scripts/business_investor_single_run.jl")  # generates business_investor.mp4
+include("scripts/business_investor_ensemble.jl")    # generates business_investor_ensemble.png
 ```
 
 ## References

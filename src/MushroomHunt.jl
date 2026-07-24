@@ -112,6 +112,10 @@ function initialize(;
     for ts in time_strategies
         θ = 2π * rand(abmrng(model))
         vel = speed * SVector(cos(θ), sin(θ))
+        # Start "hungry" (high time_since_last_found) so a forager begins in
+        # searching mode until it finds its first mushroom. Any value above the
+        # largest time_strategy works; kept finite to avoid integer overflow as
+        # the counter keeps incrementing when no food is found.
         add_agent!(Forager, model, vel, 100, 0, ts)
     end
 

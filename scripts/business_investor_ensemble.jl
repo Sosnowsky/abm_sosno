@@ -21,7 +21,7 @@ base_params = (
     dims = (19, 19),
     n_investors = 10,
     T = 5,
-    profit_range = (1.0, 10.0),
+    profit_range = (-5.0, 10.0),
     risk_range = (0.01, 0.1),
 )
 radii = [0, 1, 2, 3, 5]

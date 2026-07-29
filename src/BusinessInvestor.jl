@@ -5,11 +5,13 @@ Model logic for the business-investor ABM described in
 `models/The business investor model.md`.
 
 Investors live on a grid whose patches are *businesses*, each with a fixed
-`profit` and `risk`. Every step has two phases: investors first reposition to a
-neighbouring business offering a better profit/risk trade-off (utility
-`U = (W + T*profit) * (1 - risk)^T`), then do their accounting — wealth grows by
-the profit of the business they sit on, but with probability `risk` it is wiped to
-zero. At most one investor occupies a patch at a time.
+`profit` and `risk`. Profit may be negative — a loss-making business. Every step
+has two phases: investors first reposition to a neighbouring business offering a
+better profit/risk trade-off (utility `U = (W + T*profit) * (1 - risk)^T`), then
+do their accounting — wealth changes by the profit of the business they sit on,
+they go bankrupt (wealth reset to zero) if that pushes wealth below zero, and
+with probability `risk` the wealth is wiped to zero anyway. At most one investor
+occupies a patch at a time.
 
 This module is realization- and visualization-agnostic (no Makie dependency), so
 single-run and ensemble scripts can reuse it. Tunable parameters are `initialize`
@@ -33,6 +35,13 @@ end
 Value an investor assigns to a business: `(wealth + T*profit) * (1 - risk)^T`.
 `T` is the (fixed) planning horizon: higher profit raises the value, higher risk
 lowers it through the survival factor `(1 - risk)^T`.
+
+This is exactly the expected wealth after `T` steps, because both ruin and
+bankruptcy reset wealth to zero: survive with probability `(1 - risk)^T` and hold
+`wealth + T*profit`, otherwise hold `0`. With negative profits `wealth + T*profit`
+can be negative, and then the formula prefers *higher* risk — an investor facing
+certain losses would rather be wiped out. That is a genuine consequence of the
+reset-to-zero rule, not a special case, so the formula is left unchanged.
 """
 utility(wealth, profit, risk, T) = (wealth + T * profit) * (1 - risk)^T
 
@@ -76,15 +85,21 @@ end
 """
     accounting_step!(model)
 
-Phase 2 (accounting). Each investor's wealth grows by the profit of the business
-it occupies; then, with probability equal to that business's risk, the wealth is
-wiped to zero. Investors are independent, so the order is irrelevant.
+Phase 2 (accounting). Each investor's wealth changes by the profit of the
+business it occupies — which may be a loss. An investor whose wealth is pushed
+below zero **goes bankrupt**: its wealth is reset to zero and it keeps playing.
+Then, with probability equal to that business's risk, the wealth is wiped to zero
+by a ruin event. Investors are independent, so the order is irrelevant.
 """
 function accounting_step!(model::StandardABM)
     rng = abmrng(model)
     for investor in allagents(model)
         pos = investor.pos
         investor.wealth += model.profit[pos...]
+        # Bankruptcy: debts are not carried, the investor simply restarts at zero.
+        if investor.wealth < 0
+            investor.wealth = 0.0
+        end
         if rand(rng) < model.risk[pos...]
             investor.wealth = 0.0
         end
@@ -103,7 +118,8 @@ Keyword arguments:
 - `T`: planning horizon in the utility function (default `5`).
 - `sensing_radius`: Chebyshev radius of patches an investor can see and move to
   each step (default `1`; `0` disables repositioning).
-- `profit_range`: `(lo, hi)` uniform range for each business's profit (default `(1.0, 10.0)`).
+- `profit_range`: `(lo, hi)` uniform range for each business's profit (default
+  `(-5.0, 10.0)`; negative values are loss-making businesses).
 - `risk_range`: `(lo, hi)` uniform range for each business's risk (default `(0.01, 0.1)`).
 - `profit`, `risk`: optional precomputed matrices (override the ranges), e.g. to
   reuse one fixed business landscape across runs.
@@ -114,7 +130,7 @@ function initialize(;
     n_investors = 100,
     T = 5,
     sensing_radius = 1,
-    profit_range = (1.0, 10.0),
+    profit_range = (-5.0, 10.0),
     risk_range = (0.01, 0.1),
     profit = nothing,
     risk = nothing,

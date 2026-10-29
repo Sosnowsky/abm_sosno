@@ -2,7 +2,7 @@
 
 julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "5c85fe1b191f5d4051e3efbb6a0111cff38e01f6"
+project_hash = "faff4aaef88ff36d483f2ce8614705edca32f2a4"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -441,6 +441,20 @@ deps = ["AbstractFFTs", "DocStringExtensions", "LinearAlgebra", "MuladdMacro", "
 git-tree-sha1 = "65e55303b72f4a567a51b174dd2c47496efeb95a"
 uuid = "b86e33f2-c0db-4aa1-a6e0-ab43e668529e"
 version = "0.3.1"
+
+[[deps.FigureProvenance]]
+deps = ["Dates", "JSON"]
+path = "../figure-provenance/julia"
+uuid = "1dc928d9-1842-4bab-9b55-722024fed118"
+version = "0.1.0"
+
+    [deps.FigureProvenance.extensions]
+    FigureProvenanceMakieExt = "Makie"
+    FigureProvenancePlotsExt = "Plots"
+
+    [deps.FigureProvenance.weakdeps]
+    Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+    Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [[deps.FileIO]]
 deps = ["Pkg", "Requires", "UUIDs"]

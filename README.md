@@ -117,3 +117,24 @@ include("scripts/business_investor_ensemble.jl")    # generates business_investo
   continuous patchy environment*, J. Theor. Biol. **159**, 67–81 (1992).
 - O. Bénichou, C. Loverdo, M. Moreau, R. Voituriez, *Intermittent search
   strategies*, Rev. Mod. Phys. **83**, 81 (2011).
+
+## Coercion resentment — a fourth model
+
+An agent-based version of Schøyen (2021), the cultural-transmission model behind
+Schøyen, Sirnes and Andersen (2026). Families pass an identity to their children.
+Coercion penalises the minority identity but breeds an S-shaped resentment, which
+opens a window where more coercion grows the minority. One regime per country
+eases while the minority isn't growing, cracks down when it is growing and too
+big, and collapses with the size of the resentful minority. See
+[`models/coercion_resentment.md`](models/coercion_resentment.md).
+
+Without being told where the window is, the regimes avoid it, so coercion comes
+out bimodal. Legitimacy dips just above the window's peak, but not over the whole
+window as the paper states. A control without a window (grey) shows neither. It
+does show the mid-scale collapse peak and the easing before crackdowns, so those
+two facts do not test resentment. The minimal version (no collapse, one
+tolerance, six free parameters) is described at the end of the model file.
+
+![Coercion-resentment ensemble](plots/coercion_ensemble.png)
+
+![One country over 1500 years](plots/coercion_single_run.png)

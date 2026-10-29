@@ -1,0 +1,31 @@
+{
+  "about": "Written by the figure_provenance package (https://github.com/Sosnowsky/figure-provenance) each time a figure in this folder is saved, one entry per file. 'producer' is the function that drew it, a path inside the git repository 'repo' (remote 'remote') at 'commit'; 'uncommitted' lists the files that differed from that commit when it ran, other than this file and the figures it records. 'call' gives its arguments, 'called_from' the line that called it, 'command' what was run, from 'cwd'. 'purpose' is the producer's docstring. To change a figure, edit the producer and its docstring and rerun it: an edit to the file itself is lost on the next run.",
+  "figures": {
+    "coercion_ensemble.png": {
+      "producer": "scripts/coercion_ensemble.jl:fig_stylized_facts",
+      "call": "fig_stylized_facts(res=<Vector{Any} (200,)>, ctl=<Vector{Any} (200,)>, val=(π = 0.0:0.5:10.0, q = [0.49013448735019977, 0.45303728362183776, 0.39996338215712385, 0.37594940079893463, 0.3281304..., path=(π0 = 0.0:0.25:10.0, π = [2.3854999999999533, 2.5164999999999624, 2.565499999999956, 2.404499999999937, 2.26899999999..., p=<StandardABM>)",
+      "called_from": "scripts/coercion_ensemble.jl:189 (top-level scope)",
+      "command": "julia --project=. -t 8 scripts/coercion_ensemble.jl",
+      "cwd": ".",
+      "date": "2026-10-29T20:55:13",
+      "repo": "abm_sosno",
+      "remote": "git@github.com:Sosnowsky/abm_sosno.git",
+      "commit": "280b95b21b3f497b54a30822a5e09bc3f3cbfd9b",
+      "uncommitted": [],
+      "purpose": "Six panels testing the simplest ABM of Schøyen (2021) against the stylized facts of\nSchøyen, Sirnes and Andersen (2026): (a) the families reproduce q*(π) with coercion frozen;\n(b) coercion is bimodal with a gap at the window; (c) legitimacy dips at middle coercion;\n(d) collapse peaks at middle coercion; (e) coercion falls in the years before a crackdown;\n(f) identical regimes end low or high depending on their start. Panels b–e overlay a\nno-window control (max C' < 2), which is what tells the facts that need the window\n(b, c) from those the regime rule produces anyway (d, e)."
+    },
+    "coercion_single_run.png": {
+      "producer": "scripts/coercion_single_run.jl:fig_single_run",
+      "call": "fig_single_run(h=(coercion = [2.518016897459907, 2.518016897459907, 2.418016897459907, 2.418016897459907, 2.418016897459907, 2.4180168..., p=(seed = 15, Δu = 5.0, resentment_scale = 2.6, resentment_threshold = 4.5, resentment_steepness = 1.6))",
+      "called_from": "scripts/coercion_single_run.jl:62 (top-level scope)",
+      "command": "julia --project=. scripts/coercion_single_run.jl",
+      "cwd": ".",
+      "date": "2026-10-29T20:55:36",
+      "repo": "abm_sosno",
+      "remote": "git@github.com:Sosnowsky/abm_sosno.git",
+      "commit": "280b95b21b3f497b54a30822a5e09bc3f3cbfd9b",
+      "uncommitted": [],
+      "purpose": "One country's history: coercion over time with crackdowns (ticks) and regime collapses\n(vertical lines); the minority share against the steady state of the current coercion, which\nit chases with a generational lag; and the trajectory in the (π, q) plane over the q*(π)\ncurve, coloured by time, so the sawtooths sit on the falling branches of q* and the\nwindow between them is crossed only in a few fast escalations."
+    }
+  }
+}

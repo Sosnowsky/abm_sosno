@@ -4,20 +4,23 @@
 # burn-in play the role of their ~100k Polity/FH/V-Dem observations.
 #
 #   (a) Validation: with coercion frozen, the families settle at the paper's
-#       steady state q*(π), inefficient window included.
-#   (b) Hypothesis 2: the distribution of coercion is bimodal, with a gap where
-#       the window is.
-#   (c) Hypothesis 1: legitimacy 1 − q is non-linear in coercion, lower in the
-#       middle than on either side.
-#   (d) Hypothesis 3: regimes collapse most often at middle coercion.
+#       steady state q*(π), inefficient interval (π_q̲, π^e_q̲) included.
+#   (b) Hypothesis 2: the distribution of coercion is bimodal, with a gap in
+#       the inefficient interval.
+#   (c) Hypothesis 1: legitimacy L = 1 − q is non-linear in coercion, lower in
+#       the middle than on either side.
+#   (d) Hypothesis 3: authorities collapse most often at middle coercion (the
+#       paper's lower regime survival).
 #   (e) Table 4: coercion over the 15 years before a crackdown (a rise of more
 #       than 1 point in a year, from an already high level) against random years.
-#   (f) Path dependence (2021, Sect. 2.2): identical regimes end at low or high
-#       coercion depending on where they start.
+#   (f) Path dependence (2021, Sect. 2.2): identical authorities end at low or
+#       high coercion depending on where they start.
 #
-# Every result panel also shows a control with the same regimes and families but
-# a resentment too weak to make a window (max C′ = 0.78 < 2), so the panels say
-# which facts need the window and which come from the regime rule alone.
+# Notation follows Schøyen (2021); the 2026 paper's coercion C ∈ [0, 1] is π/π_max.
+# Every result panel also shows a control with the same authorities and families
+# but a resentment too weak to make an inefficient interval (max C′ = 0.78 < 2),
+# so the panels say which facts need the interval and which come from the
+# authority's rule alone.
 #
 # Run with:  julia --project=. -t auto scripts/coercion_ensemble.jl
 
@@ -66,20 +69,20 @@ the same average over random years whose previous year also had coercion of at
 least `HIGH`, so the two differ only in what came next.
 """
 function crackdown_profile(H; seed = 1)
-    window(x, t) = [x[t-s] for s in LAGS]
+    lagged(x, t) = [x[t-s] for s in LAGS]
     events, anchors = Vector{Float64}[], Tuple{Int,Int}[]
     for (i, h) in enumerate(H), t = (BURN_IN+last(LAGS)+1):YEARS
         x = h.coercion
         x[t-1] >= HIGH || continue
         push!(anchors, (i, t))
-        x[t] - x[t-1] > 1 && push!(events, window(x, t))
+        x[t] - x[t-1] > 1 && push!(events, lagged(x, t))
     end
     rng = MersenneTwister(seed)
-    random = [window(H[i].coercion, t) for (i, t) in rand(rng, anchors, 20_000)]
+    random = [lagged(H[i].coercion, t) for (i, t) in rand(rng, anchors, 20_000)]
     return (crackdown = mean(events), random = mean(random), n = length(events))
 end
 
-"Long-run minority share with coercion frozen at each `π`."
+"Long-run ns share with coercion frozen at each `π`."
 function validation(πs; n_families = 2000, years = 1500)
     q = zeros(length(πs))
     Threads.@threads for i in eachindex(πs)
@@ -89,11 +92,11 @@ function validation(πs; n_families = 2000, years = 1500)
     return q
 end
 
-"Final coercion of regimes with one tolerance, started at each `π0`, never collapsing."
-function path_dependence(π0s; tolerance = 0.3, years = 1500)
+"Final coercion of authorities with one tolerance `q_max`, started at each `π0`, never collapsing."
+function path_dependence(π0s; q_max = 0.3, years = 1500)
     π = zeros(length(π0s))
     Threads.@threads for i in eachindex(π0s)
-        m = initialize(; π0 = π0s[i], tolerance = (tolerance, tolerance), collapse_rate = 0, seed = i)
+        m = initialize(; π0 = π0s[i], q_max = (q_max, q_max), collapse_rate = 0, seed = i)
         π[i] = mean(history(m, years).coercion[end-199:end])
     end
     return π
@@ -102,27 +105,29 @@ end
 """
 Six panels testing the simplest ABM of Schøyen (2021) against the stylized facts of
 Schøyen, Sirnes and Andersen (2026): (a) the families reproduce q*(π) with coercion frozen;
-(b) coercion is bimodal with a gap at the window; (c) legitimacy dips at middle coercion;
-(d) collapse peaks at middle coercion; (e) coercion falls in the years before a crackdown;
-(f) identical regimes end low or high depending on their start. Panels b–e overlay a
-no-window control (max C' < 2), which is what tells the facts that need the window
-(b, c) from those the regime rule produces anyway (d, e).
+(b) coercion is bimodal with a gap in the inefficient interval (π_q̲, π^e_q̲); (c) legitimacy
+L = 1 − q dips at middle coercion; (d) collapse peaks at middle coercion; (e) coercion falls
+in the years before a crackdown; (f) identical authorities end low or high depending on their
+start. Panels b–e overlay a control without an inefficient interval (max C' < 2), which is
+what tells the facts that need the interval (b, c) from those the authority's rule produces
+anyway (d, e). Notation follows Schøyen (2021).
 """
 @provenance function fig_stylized_facts(res, ctl, val, path, p)
     set_theme!(fontsize = 13)
     fig = Figure(size = (1350, 820))
     blue, grey = RGBf(0.15, 0.35, 0.62), RGBf(0.6, 0.6, 0.63)
-    window = RGBAf(0.91, 0.64, 0.24, 0.18)
+    interval = RGBAf(0.91, 0.64, 0.24, 0.18)
     πs = range(0, 10, length = 401)
     qstar = [steady_state(π, p) for π in πs]
-    # The inefficient window: from the first minimum of q* to where it returns there.
-    i_min = argmin(qstar[πs.<p.resentment_threshold])
-    i_peak = i_min + argmax(qstar[i_min:end]) - 1
-    i_end = i_peak + findfirst(<=(qstar[i_min]), qstar[i_peak:end]) - 1
-    shade!(ax) = vspan!(ax, πs[i_min], πs[i_end]; color = window)
+    # The inefficient interval: from π_q̲, the minimum of q* below π̂, through the
+    # maximum at π_q̄, to π^e_q̲, where q* is back at q*(π_q̲).
+    i_min = argmin(qstar[πs.<p.π̂])
+    i_max = i_min + argmax(qstar[i_min:end]) - 1
+    i_end = i_max + findfirst(<=(qstar[i_min]), qstar[i_max:end]) - 1
+    shade!(ax) = vspan!(ax, πs[i_min], πs[i_end]; color = interval)
     centres = 0.5:1:9.5
 
-    ax = Axis(fig[1, 1]; xlabel = "coercion π", ylabel = "minority share q",
+    ax = Axis(fig[1, 1]; xlabel = "coercion π", ylabel = "ns share q",
         title = "(a) Families reproduce q*(π)")
     shade!(ax)
     lines!(ax, πs, qstar; color = :black, label = "q*(π), Schøyen (2021)")
@@ -132,13 +137,13 @@ no-window control (max C' < 2), which is what tells the facts that need the wind
     ax = Axis(fig[1, 2]; xlabel = "coercion π", ylabel = "share of country-years",
         title = "(b) Coercion is bimodal (H2)")
     shade!(ax)
-    for (H, c, l) in ((ctl, grey, "no window"), (res, blue, "S-shaped resentment"))
+    for (H, c, l) in ((ctl, grey, "no inefficient interval"), (res, blue, "S-shaped resentment"))
         x = pool(H, :coercion)
         stephist!(ax, x; bins = 0:0.5:10, normalization = :probability, color = c, linewidth = 2, label = l)
     end
     axislegend(ax; position = :ct, framevisible = false, labelsize = 11)
 
-    ax = Axis(fig[1, 3]; xlabel = "coercion π", ylabel = "mean legitimacy 1 − q",
+    ax = Axis(fig[1, 3]; xlabel = "coercion π", ylabel = "mean legitimacy L = 1 − q",
         title = "(c) Legitimacy dips in the middle (H1)")
     shade!(ax)
     for (H, c) in ((ctl, grey), (res, blue))
@@ -147,7 +152,7 @@ no-window control (max C' < 2), which is what tells the facts that need the wind
     lines!(ax, πs, 1 .- qstar; color = :black, linestyle = :dash, label = "1 − q*(π)")
     axislegend(ax; position = :lt, framevisible = false, labelsize = 11)
 
-    ax = Axis(fig[2, 1]; xlabel = "coercion π", ylabel = "collapses per regime-year",
+    ax = Axis(fig[2, 1]; xlabel = "coercion π", ylabel = "collapses per year",
         title = "(d) Collapse peaks in the middle (H3)")
     shade!(ax)
     for (H, c) in ((ctl, grey), (res, blue))
@@ -156,21 +161,21 @@ no-window control (max C' < 2), which is what tells the facts that need the wind
 
     ax = Axis(fig[2, 2]; xlabel = "years before the crackdown", ylabel = "mean coercion",
         title = "(e) Easing precedes crackdowns (Table 4)", xreversed = true)
-    for (prof, c, l) in ((crackdown_profile(ctl), grey, "no window"), (crackdown_profile(res), blue, "S-shaped"))
+    for (prof, c, l) in ((crackdown_profile(ctl), grey, "no interval"), (crackdown_profile(res), blue, "S-shaped"))
         scatterlines!(ax, LAGS, prof.crackdown; color = c, label = "$l: before $(prof.n) crackdowns")
         lines!(ax, LAGS, prof.random; color = c, linestyle = :dash, label = "$l: random high years")
     end
     axislegend(ax; position = :lb, framevisible = false, labelsize = 10)
 
     ax = Axis(fig[2, 3]; xlabel = "initial coercion π₀", ylabel = "long-run coercion",
-        title = "(f) Path dependence, tolerance 0.3")
+        title = rich("(f) Path dependence, q", subscript("max"), " = 0.3"))
     shade!(ax)
     scatter!(ax, path.π0, path.π; color = blue)
     lines!(ax, [0, 10], [0, 10]; color = grey, linestyle = :dot)
 
     Label(fig[0, :],
         "Coercion-resentment ABM: $N_COUNTRIES countries × $(YEARS - BURN_IN) years " *
-        "(shaded: the inefficient window of q*)"; fontsize = 17)
+        "(shaded: the inefficient interval of q*)"; fontsize = 17)
     set_theme!()
     return fig
 end
@@ -190,7 +195,7 @@ FigureProvenance.save(fig_stylized_facts(res, ctl, val, path, p), OUT)
 println("Wrote $OUT")
 
 # --- Numbers behind the figure ---
-for (name, H) in (("S-shaped resentment", res), ("no window", ctl))
+for (name, H) in (("S-shaped resentment", res), ("no inefficient interval", ctl))
     x = pool(H, :coercion)
     println("\n$name")
     println("  share of country-years with 3 ≤ π < 7: ", round(mean(3 .<= x .< 7), digits = 3))

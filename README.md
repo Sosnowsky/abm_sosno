@@ -122,19 +122,31 @@ include("scripts/business_investor_ensemble.jl")    # generates business_investo
 
 An agent-based version of Schøyen (2021), the cultural-transmission model behind
 Schøyen, Sirnes and Andersen (2026). Families pass an identity to their children.
-Coercion penalises the minority identity but breeds an S-shaped resentment, which
-opens a window where more coercion grows the minority. One regime per country
-eases while the minority isn't growing, cracks down when it is growing and too
-big, and collapses with the size of the resentful minority. See
+Coercion `π` penalises the non-state identity *ns* but breeds an S-shaped
+resentment `C(π)`, which opens an inefficient interval `(π_q̲, π^e_q̲)` where more
+coercion does not shrink the ns group. One authority per country eases while the
+ns group isn't growing, cracks down when it is growing and above the authority's
+tolerance `q_max`, and collapses with the size of the resentful ns group. The
+notation follows Schøyen (2021). See
 [`models/coercion_resentment.md`](models/coercion_resentment.md).
 
-Without being told where the window is, the regimes avoid it, so coercion comes
-out bimodal. Legitimacy dips just above the window's peak, but not over the whole
-window as the paper states. A control without a window (grey) shows neither. It
-does show the mid-scale collapse peak and the easing before crackdowns, so those
-two facts do not test resentment. The minimal version (no collapse, one
-tolerance, six free parameters) is described at the end of the model file.
+Without being told where the interval is, the authorities avoid its rising part,
+so coercion comes out bimodal. Legitimacy `L = 1 − q` dips just above `π_q̲`, but
+not over the whole interval as the paper states. A control without an
+inefficient interval (grey) shows neither. It does show the mid-scale collapse
+peak and the easing before crackdowns, so those two facts do not test
+resentment. The minimal version (no collapse, one `q_max`, six free parameters)
+is described at the end of the model file.
 
 ![Coercion-resentment ensemble](plots/coercion_ensemble.png)
 
 ![One country over 1500 years](plots/coercion_single_run.png)
+
+With `rule = :fixed`, `:exogenous` (constraint `ρ`) or `:insurrection`
+(constraint `ρ(q)`), the same families follow the 2021 paper's own authority
+instead. The model then reproduces the steady state
+`q*(π)`, the theorem of restraint and path dependence. It also shows something
+the paper cannot: with finite populations the high-coercion state is only
+metastable (`scripts/coercion_2021.jl`).
+
+![The ABM under the 2021 rules](plots/coercion_2021.png)

@@ -1,31 +1,44 @@
 {
   "about": "Written by the figure_provenance package (https://github.com/Sosnowsky/figure-provenance) each time a figure in this folder is saved, one entry per file. 'producer' is the function that drew it, a path inside the git repository 'repo' (remote 'remote') at 'commit'; 'uncommitted' lists the files that differed from that commit when it ran, other than this file and the figures it records. 'call' gives its arguments, 'called_from' the line that called it, 'command' what was run, from 'cwd'. 'purpose' is the producer's docstring. To change a figure, edit the producer and its docstring and rerun it: an edit to the file itself is lost on the next run.",
   "figures": {
+    "coercion_2021.png": {
+      "producer": "scripts/coercion_2021.jl:fig_2021",
+      "call": "fig_2021(val=(π = 0.0:0.5:10.0, q = [0.4987834, 0.45155240000000013, 0.4050874, 0.3625562, 0.31853059999999994, 0.2789266, 0.26071..., rest=(ρ = 0.0:0.25:12.0, π = [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.58, 3.58..., paths=(a = (coercion = [10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10...., sw=(a = [0.75, 0.85, 0.65, 0.25], b = [0.09999999999999998, 0.0, 0.0, 0.0]), p=<StandardABM>)",
+      "called_from": "scripts/coercion_2021.jl:140 (top-level scope)",
+      "command": "julia --project=. -t 8 scripts/coercion_2021.jl",
+      "cwd": ".",
+      "date": "2026-10-30T08:05:40",
+      "repo": "abm_sosno",
+      "remote": "git@github.com:Sosnowsky/abm_sosno.git",
+      "commit": "7ddda4cff4ba0527056fda51eef98f76a927c0ad",
+      "uncommitted": [],
+      "purpose": "The ABM under the three rules of Schøyen (2021) for the authority, each against the paper's analytic\nanswer, in the paper's notation: (a) with π frozen the families settle on q*(π); (b) the\ntheorem of restraint, an exogenous constraint ρ anywhere in the inefficient interval\n(π_q̲, π^e_q̲) leaves the authority at π_q̲; (c) path dependence under the insurrection constraint\nρ(q), two starting ns shares ending at high and low coercion; (d) what the paper cannot show:\nwith finite N the high state of start A is metastable, and switches more often the fewer the\nfamilies. Okabe–Ito colours, with line style and marker shape as a second cue. The underlined\nsubscript q̲ is set in DejaVu Sans, since Makie's default font and LaTeX mode cannot draw it."
+    },
     "coercion_ensemble.png": {
       "producer": "scripts/coercion_ensemble.jl:fig_stylized_facts",
       "call": "fig_stylized_facts(res=<Vector{Any} (200,)>, ctl=<Vector{Any} (200,)>, val=(π = 0.0:0.5:10.0, q = [0.49013448735019977, 0.45303728362183776, 0.39996338215712385, 0.37594940079893463, 0.3281304..., path=(π0 = 0.0:0.25:10.0, π = [2.3854999999999533, 2.5164999999999624, 2.565499999999956, 2.404499999999937, 2.26899999999..., p=<StandardABM>)",
-      "called_from": "scripts/coercion_ensemble.jl:189 (top-level scope)",
+      "called_from": "scripts/coercion_ensemble.jl:194 (top-level scope)",
       "command": "julia --project=. -t 8 scripts/coercion_ensemble.jl",
       "cwd": ".",
-      "date": "2026-10-29T20:55:13",
+      "date": "2026-10-30T08:05:12",
       "repo": "abm_sosno",
       "remote": "git@github.com:Sosnowsky/abm_sosno.git",
-      "commit": "280b95b21b3f497b54a30822a5e09bc3f3cbfd9b",
+      "commit": "7ddda4cff4ba0527056fda51eef98f76a927c0ad",
       "uncommitted": [],
-      "purpose": "Six panels testing the simplest ABM of Schøyen (2021) against the stylized facts of\nSchøyen, Sirnes and Andersen (2026): (a) the families reproduce q*(π) with coercion frozen;\n(b) coercion is bimodal with a gap at the window; (c) legitimacy dips at middle coercion;\n(d) collapse peaks at middle coercion; (e) coercion falls in the years before a crackdown;\n(f) identical regimes end low or high depending on their start. Panels b–e overlay a\nno-window control (max C' < 2), which is what tells the facts that need the window\n(b, c) from those the regime rule produces anyway (d, e)."
+      "purpose": "Six panels testing the simplest ABM of Schøyen (2021) against the stylized facts of\nSchøyen, Sirnes and Andersen (2026): (a) the families reproduce q*(π) with coercion frozen;\n(b) coercion is bimodal with a gap in the inefficient interval (π_q̲, π^e_q̲); (c) legitimacy\nL = 1 − q dips at middle coercion; (d) collapse peaks at middle coercion; (e) coercion falls\nin the years before a crackdown; (f) identical authorities end low or high depending on their\nstart. Panels b–e overlay a control without an inefficient interval (max C' < 2), which is\nwhat tells the facts that need the interval (b, c) from those the authority's rule produces\nanyway (d, e). Notation follows Schøyen (2021)."
     },
     "coercion_single_run.png": {
       "producer": "scripts/coercion_single_run.jl:fig_single_run",
-      "call": "fig_single_run(h=(coercion = [2.518016897459907, 2.518016897459907, 2.418016897459907, 2.418016897459907, 2.418016897459907, 2.4180168..., p=(seed = 15, Δu = 5.0, resentment_scale = 2.6, resentment_threshold = 4.5, resentment_steepness = 1.6))",
+      "call": "fig_single_run(h=(coercion = [2.518016897459907, 2.518016897459907, 2.418016897459907, 2.418016897459907, 2.418016897459907, 2.4180168..., p=(seed = 15, Δu = 5.0, resentment_scale = 2.6, π̂ = 4.5, resentment_steepness = 1.6))",
       "called_from": "scripts/coercion_single_run.jl:62 (top-level scope)",
-      "command": "julia --project=. scripts/coercion_single_run.jl",
+      "command": "julia --project=. -t 8 scripts/coercion_single_run.jl",
       "cwd": ".",
-      "date": "2026-10-29T20:55:36",
+      "date": "2026-10-30T08:04:44",
       "repo": "abm_sosno",
       "remote": "git@github.com:Sosnowsky/abm_sosno.git",
-      "commit": "280b95b21b3f497b54a30822a5e09bc3f3cbfd9b",
+      "commit": "7ddda4cff4ba0527056fda51eef98f76a927c0ad",
       "uncommitted": [],
-      "purpose": "One country's history: coercion over time with crackdowns (ticks) and regime collapses\n(vertical lines); the minority share against the steady state of the current coercion, which\nit chases with a generational lag; and the trajectory in the (π, q) plane over the q*(π)\ncurve, coloured by time, so the sawtooths sit on the falling branches of q* and the\nwindow between them is crossed only in a few fast escalations."
+      "purpose": "One country's history: coercion over time with crackdowns (ticks) and collapses of the\nauthority (vertical lines); the ns share q against the steady state of the current coercion,\nwhich it chases with a generational lag; and the trajectory in the (π, q) plane over the q*(π)\ncurve, coloured by time, so the sawtooths sit on the falling branches of q* and the rising\npart between them, (π_q̲, π_q̄), is crossed only in a few fast escalations."
     }
   }
 }

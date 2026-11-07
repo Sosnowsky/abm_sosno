@@ -6,19 +6,24 @@
 # 200 years rather than 100: at ε(β − 1) = 0.03 the tourists concentrate after about 115 years
 # (scripts/tourist_conformity_sweep.jl), so 100 years would stop mid-way.
 #
+# The same run is also written as an interactive Plotly figure (plots/tourist_conformity_garden.plotly.json), for a
+# ```plot block in the note: zoom, hover for each destination's numbers, hide groups of lines from the legend, and
+# switch the y axis between log and linear.
+#
 # Run with:  julia --project=. scripts/tourist_garden_figure.jl [seed]
 
 using Pkg;
 Pkg.activate(joinpath(@__DIR__, ".."))
 include(joinpath(@__DIR__, "..", "src", "TouristDestinations.jl"))
 using .TouristDestinations
-using Agents, CairoMakie, FigureProvenance
+using Agents, CairoMakie, FigureProvenance, JSON
 
 const SEED = length(ARGS) >= 1 ? parse(Int, ARGS[1]) : 1
 const ε, β = 0.1, 1.3
 const YEARS = 200
 const N_RUNNERS_UP = 4
 const OUT = joinpath(@__DIR__, "..", "plots", "tourist_conformity_garden.svg")
+const OUT_PLOTLY = joinpath(@__DIR__, "..", "plots", "tourist_conformity_garden.plotly.json")
 # The garden's colour tokens (sosno-garden, assets/garden.css), so the figure reads as part of the page.
 const THEMES = (
     light = (ink = colorant"#18221d", muted = colorant"#5b6a61", rule = colorant"#cdd6cf",
@@ -125,8 +130,76 @@ and its dark theme.
     return ThemedSVG(draw_popularity(h, themes.light; ε, β), draw_popularity(h, themes.dark; ε, β))
 end
 
+"A Plotly figure: its traces and layout, written as the JSON that Plotly's `newPlot` and the garden's ```plot blocks read."
+mutable struct PlotlyFigure  # mutable: FigureProvenance tags the object to find its docstring
+    data::Vector{Dict{String,Any}}
+    layout::Dict{String,Any}
+end
+
+function FigureProvenance.write_figure(f::PlotlyFigure, path; kwargs...)
+    endswith(path, ".json") || throw(ArgumentError("a PlotlyFigure is written as .json, not $(basename(path))"))
+    write(path, JSON.json(Dict("data" => f.data, "layout" => f.layout)))
+    return path
+end
+
+"""
+The garden figure (`fig_garden`) as an interactive Plotly figure for the note "Why did we choose Taiwan?": the same
+run, lines and colours, now with a tooltip naming each destination and its expected visitors, zoom, legend entries
+that hide or show a whole group (the winner, the 4 runners-up, the other 95, the even split), and buttons switching
+the y axis between log (as in the SVG, where 0 cannot be shown: it starts at 0.3) and linear. Colours are written as
+the garden's tokens (`var(--accent)`, …), which the page resolves for its light or dark theme; numbers are rounded
+to 0.01 visitors to keep the file small.
+"""
+@provenance function fig_garden_plotly(h; ε, β)
+    D, T = size(h.popularity)
+    N = sum(h.visits[:, 1])
+    pop = N .* h.popularity
+    winner = argmax(pop[:, end])
+    peak = vec(maximum(pop, dims = 2))
+    peak[winner] = -Inf
+    runners = partialsortperm(peak, 1:N_RUNNERS_UP; rev = true)
+    others = setdiff(1:D, winner, runners)
+    years = collect(1:T)
+    hover = "destination %{meta}<br>year %{x}: %{y:.1f} visitors<extra></extra>"
+    line(d, group, name, color, width, first; opacity = 1.0) = Dict{String,Any}(
+        "type" => "scatter", "mode" => "lines", "x" => years, "y" => round.(pop[d, :], digits = 2),
+        "name" => name, "legendgroup" => group, "showlegend" => first, "meta" => d, "hovertemplate" => hover,
+        "opacity" => opacity, "line" => Dict("color" => color, "width" => width))
+    data = Dict{String,Any}[]
+    for (i, d) in enumerate(others)
+        push!(data, line(d, "others", "the other $(length(others))", "var(--muted)", 0.8, i == 1; opacity = 0.35))
+    end
+    for (i, d) in enumerate(runners)
+        push!(data, line(d, "runners", "the $N_RUNNERS_UP runners-up", "var(--moss)", 2, i == 1))
+    end
+    push!(data, line(winner, "winner", "where everybody ends up", "var(--accent)", 3, true))
+    push!(data, Dict{String,Any}("type" => "scatter", "mode" => "lines", "x" => [1, T], "y" => [N / D, N / D],
+        "name" => "even split, $(N ÷ D) per destination", "hoverinfo" => "skip",
+        "line" => Dict("color" => "var(--ink)", "width" => 1.3, "dash" => "dot")))
+    logrange = [log10(0.3), log10(1.15N)]
+    button(label, args) = Dict("label" => label, "method" => "relayout", "args" => [args])
+    layout = Dict{String,Any}(
+        "hovermode" => "closest",
+        "margin" => Dict("t" => 40),
+        "xaxis" => Dict("title" => Dict("text" => "year"), "range" => [0, T]),
+        "yaxis" => Dict("title" => Dict("text" => "expected visitors per year"), "type" => "log", "range" => logrange,
+            "tickvals" => [1, 3, 10, 30, 100, 300, 1000]),
+        "legend" => Dict("orientation" => "h", "x" => 0, "y" => -0.2, "yanchor" => "top"),
+        "annotations" => [Dict("text" => "$N tourists, $D destinations, influence ε = $ε, conformity β = $β",
+            "xref" => "paper", "yref" => "paper", "x" => 0, "y" => 1.04, "xanchor" => "left", "yanchor" => "bottom",
+            "showarrow" => false, "font" => Dict("color" => "var(--muted)"))],
+        "updatemenus" => [Dict("type" => "buttons", "direction" => "right", "showactive" => true, "active" => 0,
+            "x" => 1, "xanchor" => "right", "y" => 1.03, "yanchor" => "bottom", "pad" => Dict("r" => 0, "t" => 0),
+            "bgcolor" => "var(--panel)", "bordercolor" => "var(--rule)", "font" => Dict("color" => "var(--ink)"),
+            "buttons" => [button("log", Dict("yaxis.type" => "log", "yaxis.range" => logrange)),
+                button("linear", Dict("yaxis.type" => "linear", "yaxis.range" => [0, 1.15N]))])])
+    return PlotlyFigure(data, layout)
+end
+
 h = history(initialize(; ε, β, update = :mixing, seed = SEED), YEARS)
 FigureProvenance.save(fig_garden(h; ε, β), OUT)
+FigureProvenance.save(fig_garden_plotly(h; ε, β), OUT_PLOTLY)
+println("Wrote $OUT_PLOTLY ($(round(filesize(OUT_PLOTLY) / 1024, digits = 1)) KB)")
 println("Wrote $OUT ($(round(filesize(OUT) / 1024, digits = 1)) KB)")
 N = sum(h.visits[:, 1])
 eff = [effective_number(h.popularity[:, t]) for t = 1:YEARS]

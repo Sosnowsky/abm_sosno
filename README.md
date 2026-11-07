@@ -150,3 +150,55 @@ the paper cannot: with finite populations the high-coercion state is only
 metastable (`scripts/coercion_2021.jl`).
 
 ![The ABM under the 2021 rules](plots/coercion_2021.png)
+
+## Tourist destinations — a fifth model
+
+1000 tourists each pick one of 100 destinations a year by throwing a die weighted
+by their own random tastes `w_nd`. Under the **additive rule**, after the holidays
+every weight grows by `ε` times the number of other tourists who went there. See
+[`models/tourist_destinations.md`](models/tourist_destinations.md).
+
+Each heatmap row is a destination, ranked by its visitors in year 1. All three
+runs share the same tastes and the same first year. Without influence that
+ranking is forgotten at once. With influence it is locked in for the whole
+century, although nobody prefers the lucky destinations.
+
+![Tourist destinations over 100 years](plots/tourist_destinations.png)
+
+The reinforcement is linear, so the model is a Pólya urn. It freezes popularity
+but does not concentrate it: even unlimited influence leaves about 86 of 100
+destinations in effective use. The ABM matches the closed-form prediction across
+five decades of `ε`.
+
+![Influence sweep](plots/tourist_influence_sweep.png)
+
+With the **mixing rule** the weights stay a probability distribution, and each
+year a fraction `ε` of it is replaced by where everyone went:
+`w ← (1 − ε) w + (ε/N) Σ d`. Older years now fade, so popularity never freezes.
+It drifts like gene frequencies under neutral genetic drift, and destinations die
+out one by one until one has everyone. The drift is slow, with a time scale of
+`N/ε²` years. In 100 years only `ε` near 1 concentrates the 1000 tourists
+strongly: at `ε = 1`, 9.5 effective destinations remain and only ~18 are still
+visited.
+
+![Tourist destinations under the mixing rule](plots/tourist_destinations_mixing.png)
+
+![Mixing rule sweep](plots/tourist_mixing_sweep.png)
+
+With **conformity** (`β > 1`), people mix in a sharpened distribution of trips,
+`s_d ∝ c_d^β`, so popular destinations count more than their share of visitors.
+Drift becomes selection: a destination's excess popularity grows by a factor
+`1 + ε(β − 1)` a year, whatever the population. At `ε = 0.3, β = 1.3` one
+destination takes all 1000 tourists within about 50 years, and ten times more
+tourists only delay that by about a decade.
+
+![Tourist destinations with conformity](plots/tourist_destinations_conformity.png)
+
+![Conformity sweep](plots/tourist_conformity_sweep.png)
+
+```julia
+include("scripts/tourist_destinations.jl")      # plots/tourist_destinations{,_mixing,_conformity}.png
+include("scripts/tourist_influence_sweep.jl")   # plots/tourist_influence_sweep.png
+include("scripts/tourist_mixing_sweep.jl")      # plots/tourist_mixing_sweep.png
+include("scripts/tourist_conformity_sweep.jl")  # plots/tourist_conformity_sweep.png
+```

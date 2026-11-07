@@ -76,16 +76,24 @@ function FigureProvenance.write_figure(f::ThemedSVG, path; kwargs...)
     return path
 end
 
-"One theme's drawing of `fig_garden`, in the colours `c`."
-function draw_popularity(h, c; ε, β)
-    D, T = size(h.popularity)
-    N = sum(h.visits[:, 1])
-    pop = N .* h.popularity
-    winner = argmax(pop[:, end])
-    peak = vec(maximum(pop, dims = 2))
+"""
+The destinations of a visits matrix (destination × year) by their part in the figure: the one most visited in the
+last year (where everybody ends up), the $N_RUNNERS_UP others whose yearly visits peaked highest, and the rest.
+"""
+function groups(v)
+    winner = argmax(v[:, end])
+    peak = Float64.(vec(maximum(v, dims = 2)))
     peak[winner] = -Inf
     runners = partialsortperm(peak, 1:N_RUNNERS_UP; rev = true)
-    others = setdiff(1:D, winner, runners)
+    return winner, runners, setdiff(1:size(v, 1), winner, runners)
+end
+
+"One theme's drawing of `fig_garden`, in the colours `c`."
+function draw_visits(h, c; ε, β)
+    D, T = size(h.visits)
+    N = sum(h.visits[:, 1])
+    v = h.visits
+    winner, runners, others = groups(v)
     faint = RGBAf(c.muted, 0.35)
 
     fig = Figure(size = (700, 430), fontsize = 17, backgroundcolor = :transparent, figure_padding = (4, 14, 4, 4))
@@ -96,12 +104,12 @@ function draw_popularity(h, c; ε, β)
         xtickcolor = c.rule, ytickcolor = c.rule, xticklabelcolor = c.muted, yticklabelcolor = c.muted,
         xlabelcolor = c.ink, ylabelcolor = c.ink)
     for d in others
-        lines!(ax, 1:T, pop[d, :]; color = faint, linewidth = 0.8)
+        lines!(ax, 1:T, v[d, :]; color = faint, linewidth = 0.8)
     end
     for d in runners
-        lines!(ax, 1:T, pop[d, :]; color = c.runners, linewidth = 2, linestyle = :dash)
+        lines!(ax, 1:T, v[d, :]; color = c.runners, linewidth = 2, linestyle = :dash)
     end
-    lines!(ax, 1:T, pop[winner, :]; color = c.winner, linewidth = 3)
+    lines!(ax, 1:T, v[winner, :]; color = c.winner, linewidth = 3)
     hlines!(ax, [N / D]; color = c.ink, linestyle = :dot, linewidth = 1.3)
     limits!(ax, 0, T, 0, 1.15N)
 
@@ -120,8 +128,9 @@ end
 
 """
 Popularity under conformity for the garden's note "Why did we choose Taiwan?": each of the 100 destinations'
-number of visitors per year (popularity × N) over 200 years at ε = 0.1, β = 1.3, from one seed. The destination that
-everybody ends up at is drawn in Okabe–Ito vermillion, the 4 others whose popularity peaked highest (runners-up that
+number of visitors per year (the trips of that year, `h.visits`) over 200 years at ε = 0.1, β = 1.3, from one seed.
+The destination that everybody ends up at is drawn in Okabe–Ito vermillion, the 4 others whose visits peaked highest
+(runners-up that
 grow for a while and then collapse) in the second colour, the rest faint, with the even split (N/D = 10) dotted.
 The y axis is pseudo-logarithmic, so both the early spread around 10 and the winner's 1000 can be read. It is the
 bottom row of `fig_time_evolution` with less on it (no ranking by the final year, no statistics), 200 years long
@@ -129,7 +138,7 @@ because concentration takes about 115 years at ε(β − 1) = 0.03, and in the g
 and its dark theme.
 """
 @provenance function fig_garden(h; ε, β, themes = THEMES)
-    return ThemedSVG(draw_popularity(h, themes.light; ε, β), draw_popularity(h, themes.dark; ε, β))
+    return ThemedSVG(draw_visits(h, themes.light; ε, β), draw_visits(h, themes.dark; ε, β))
 end
 
 "A Plotly figure: its traces and layout, written as the JSON that Plotly's `newPlot` and the garden's ```plot blocks read."
@@ -148,23 +157,23 @@ end
 The garden figure (`fig_garden`) as an interactive Plotly figure for the note "Why did we choose Taiwan?": the same
 run, lines, colours and line styles, now with a tooltip naming each destination and its visitors, zoom, legend entries
 that hide or show a whole group (the winner, the 4 runners-up, the other 95, the even split), and buttons (top left, clear of Plotly's
-toolbar at the top right) switching the y axis between log (as in the SVG, where 0 cannot be shown: it starts at 0.3) and linear. Colours are written as
-the garden's tokens (`var(--oi-vermillion)`, …), which the page resolves for its light or dark theme; the run's parameters go in `layout.meta.caption`, which the garden shows as the caption; numbers are rounded
-to 0.01 visitors to keep the file small.
+toolbar at the top right) switching the y axis between pseudo-log (log10(1 + visits), as in the SVG, so years with no visitors still show)
+and linear. Colours are written as
+the garden's tokens (`var(--oi-vermillion)`, …), which the page resolves for its light or dark theme; the run's parameters go in `layout.meta.caption`, which the garden shows as the caption; the pseudo-log values are
+rounded to 4 decimals to keep the file small.
 """
 @provenance function fig_garden_plotly(h; ε, β)
-    D, T = size(h.popularity)
-    N = sum(h.visits[:, 1])
-    pop = N .* h.popularity
-    winner = argmax(pop[:, end])
-    peak = vec(maximum(pop, dims = 2))
-    peak[winner] = -Inf
-    runners = partialsortperm(peak, 1:N_RUNNERS_UP; rev = true)
-    others = setdiff(1:D, winner, runners)
+    v = h.visits
+    D, T = size(v)
+    N = sum(v[:, 1])
+    winner, runners, others = groups(v)
     years = collect(1:T)
-    hover = "destination %{meta}<br>year %{x}: %{y:.0f} visitors<extra></extra>"
+    # Plotly's log axis cannot show 0, and a destination often gets no visitors in a year. So the log view draws
+    # log10(1 + visits), Makie's pseudolog10 as in the SVG, with ticks labelled in visitors; the tooltip shows the count.
+    plog(x) = round(log10(1 + x), digits = 4)
+    hover = "destination %{meta}<br>year %{x}: %{customdata} visitors<extra></extra>"
     line(d, group, name, color, width, first; opacity = 1.0, dash = "solid") = Dict{String,Any}(
-        "type" => "scatter", "mode" => "lines", "x" => years, "y" => round.(pop[d, :], digits = 2),
+        "type" => "scatter", "mode" => "lines", "x" => years, "y" => plog.(v[d, :]), "customdata" => v[d, :],
         "name" => name, "legendgroup" => group, "showlegend" => first, "meta" => d, "hovertemplate" => hover,
         "opacity" => opacity, "line" => Dict("color" => color, "width" => width, "dash" => dash))
     data = Dict{String,Any}[]
@@ -175,17 +184,24 @@ to 0.01 visitors to keep the file small.
         push!(data, line(d, "runners", "the $N_RUNNERS_UP runners-up", "var(--oi-blue)", 2, i == 1; dash = "dash"))
     end
     push!(data, line(winner, "winner", "where everybody ends up", "var(--oi-vermillion)", 3, true))
-    push!(data, Dict{String,Any}("type" => "scatter", "mode" => "lines", "x" => [1, T], "y" => [N / D, N / D],
+    even = N / D
+    push!(data, Dict{String,Any}("type" => "scatter", "mode" => "lines", "x" => [1, T], "y" => plog.([even, even]),
         "name" => "even split, $(N ÷ D) per destination", "hoverinfo" => "skip",
         "line" => Dict("color" => "var(--ink)", "width" => 1.3, "dash" => "dot")))
-    logrange = [log10(0.3), log10(1.15N)]
-    button(label, args) = Dict("label" => label, "method" => "relayout", "args" => [args])
+    ticks = [0, 1, 3, 10, 30, 100, 300, 1000]
+    logaxis = Dict("yaxis.tickmode" => "array", "yaxis.tickvals" => plog.(ticks), "yaxis.ticktext" => string.(ticks),
+        "yaxis.range" => [0, plog(1.15N)])
+    linaxis = Dict("yaxis.tickmode" => "auto", "yaxis.range" => [0, 1.15N])
+    # the buttons swap every trace's y (in the order of `data`) and the axis together
+    ys_log = [t["y"] for t in data]
+    ys_lin = [[get(t, "customdata", [even, even])...] for t in data]
+    button(label, ys, axis) = Dict("label" => label, "method" => "update", "args" => [Dict("y" => ys), axis])
     layout = Dict{String,Any}(
         "hovermode" => "closest",
         "margin" => Dict("t" => 40),
         "xaxis" => Dict("title" => Dict("text" => "year"), "range" => [0, T]),
-        "yaxis" => Dict("title" => Dict("text" => "number of visitors"), "type" => "log", "range" => logrange,
-            "tickvals" => [1, 3, 10, 30, 100, 300, 1000]),
+        "yaxis" => Dict("title" => Dict("text" => "number of visitors"), "tickmode" => "array",
+            "tickvals" => plog.(ticks), "ticktext" => string.(ticks), "range" => [0, plog(1.15N)]),
         # at the bottom of the whole figure, not of the plot, so it never runs into the axis title when it wraps on a phone
         "legend" => Dict("orientation" => "h", "x" => 0, "xanchor" => "left", "yref" => "container", "y" => 0,
             "yanchor" => "bottom"),
@@ -194,8 +210,7 @@ to 0.01 visitors to keep the file small.
         "updatemenus" => [Dict("type" => "buttons", "direction" => "right", "showactive" => true, "active" => 0,
             "x" => 0, "xanchor" => "left", "y" => 1.03, "yanchor" => "bottom", "pad" => Dict("r" => 0, "t" => 0),
             "bgcolor" => "var(--panel)", "bordercolor" => "var(--rule)", "font" => Dict("color" => "var(--ink)"),
-            "buttons" => [button("log", Dict("yaxis.type" => "log", "yaxis.range" => logrange)),
-                button("linear", Dict("yaxis.type" => "linear", "yaxis.range" => [0, 1.15N]))])])
+            "buttons" => [button("log", ys_log, logaxis), button("linear", ys_lin, linaxis)])])
     return PlotlyFigure(data, layout)
 end
 

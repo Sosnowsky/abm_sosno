@@ -43,28 +43,28 @@
     "tourist_conformity_garden.plotly.json": {
       "producer": "scripts/tourist_garden_figure.jl:fig_garden_plotly",
       "call": "fig_garden_plotly(h=<NamedTuple>, ε=0.1, β=1.3)",
-      "called_from": "scripts/tourist_garden_figure.jl:204 (top-level scope)",
+      "called_from": "scripts/tourist_garden_figure.jl:219 (top-level scope)",
       "command": "julia --project=. -t 2 scripts/tourist_garden_figure.jl",
       "cwd": ".",
-      "date": "2026-11-07T17:53:56",
+      "date": "2026-11-07T18:19:03",
       "repo": "abm_sosno",
       "remote": "git@github.com:Sosnowsky/abm_sosno.git",
-      "commit": "194580e872f1f8124e692036e1b0bac34270d36d",
+      "commit": "4442de4bb83da60388d7589b4260c67b420c543d",
       "uncommitted": [],
-      "purpose": "The garden figure (`fig_garden`) as an interactive Plotly figure for the note \"Why did we choose Taiwan?\": the same\nrun, lines, colours and line styles, now with a tooltip naming each destination and its visitors, zoom, legend entries\nthat hide or show a whole group (the winner, the 4 runners-up, the other 95, the even split), and buttons (top left, clear of Plotly's\ntoolbar at the top right) switching the y axis between log (as in the SVG, where 0 cannot be shown: it starts at 0.3) and linear. Colours are written as\nthe garden's tokens (`var(--oi-vermillion)`, …), which the page resolves for its light or dark theme; the run's parameters go in `layout.meta.caption`, which the garden shows as the caption; numbers are rounded\nto 0.01 visitors to keep the file small."
+      "purpose": "The garden figure (`fig_garden`) as an interactive Plotly figure for the note \"Why did we choose Taiwan?\": the same\nrun, lines, colours and line styles, now with a tooltip naming each destination and its visitors, zoom, legend entries\nthat hide or show a whole group (the winner, the 4 runners-up, the other 95, the even split), and buttons (top left, clear of Plotly's\ntoolbar at the top right) switching the y axis between pseudo-log (log10(1 + visits), as in the SVG, so years with no visitors still show)\nand linear. Colours are written as\nthe garden's tokens (`var(--oi-vermillion)`, …), which the page resolves for its light or dark theme; the run's parameters go in `layout.meta.caption`, which the garden shows as the caption; the pseudo-log values are\nrounded to 4 decimals to keep the file small."
     },
     "tourist_conformity_garden.svg": {
       "producer": "scripts/tourist_garden_figure.jl:fig_garden",
       "call": "fig_garden(h=<NamedTuple>, ε=0.1, β=1.3, themes=<NamedTuple>)",
-      "called_from": "scripts/tourist_garden_figure.jl:203 (top-level scope)",
+      "called_from": "scripts/tourist_garden_figure.jl:218 (top-level scope)",
       "command": "julia --project=. -t 2 scripts/tourist_garden_figure.jl",
       "cwd": ".",
-      "date": "2026-11-07T17:53:53",
+      "date": "2026-11-07T18:18:59",
       "repo": "abm_sosno",
       "remote": "git@github.com:Sosnowsky/abm_sosno.git",
-      "commit": "194580e872f1f8124e692036e1b0bac34270d36d",
+      "commit": "4442de4bb83da60388d7589b4260c67b420c543d",
       "uncommitted": [],
-      "purpose": "Popularity under conformity for the garden's note \"Why did we choose Taiwan?\": each of the 100 destinations'\nnumber of visitors per year (popularity × N) over 200 years at ε = 0.1, β = 1.3, from one seed. The destination that\neverybody ends up at is drawn in Okabe–Ito vermillion, the 4 others whose popularity peaked highest (runners-up that\ngrow for a while and then collapse) in the second colour, the rest faint, with the even split (N/D = 10) dotted.\nThe y axis is pseudo-logarithmic, so both the early spread around 10 and the winner's 1000 can be read. It is the\nbottom row of `fig_time_evolution` with less on it (no ranking by the final year, no statistics), 200 years long\nbecause concentration takes about 115 years at ε(β − 1) = 0.03, and in the garden's colours, drawn for its light\nand its dark theme."
+      "purpose": "Popularity under conformity for the garden's note \"Why did we choose Taiwan?\": each of the 100 destinations'\nnumber of visitors per year (the trips of that year, `h.visits`) over 200 years at ε = 0.1, β = 1.3, from one seed.\nThe destination that everybody ends up at is drawn in Okabe–Ito vermillion, the 4 others whose visits peaked highest\n(runners-up that\ngrow for a while and then collapse) in the second colour, the rest faint, with the even split (N/D = 10) dotted.\nThe y axis is pseudo-logarithmic, so both the early spread around 10 and the winner's 1000 can be read. It is the\nbottom row of `fig_time_evolution` with less on it (no ranking by the final year, no statistics), 200 years long\nbecause concentration takes about 115 years at ε(β − 1) = 0.03, and in the garden's colours, drawn for its light\nand its dark theme."
     },
     "tourist_conformity_sweep.png": {
       "producer": "scripts/tourist_conformity_sweep.jl:fig_conformity_sweep",

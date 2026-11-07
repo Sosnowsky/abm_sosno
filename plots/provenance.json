@@ -43,26 +43,26 @@
     "tourist_conformity_garden.plotly.json": {
       "producer": "scripts/tourist_garden_figure.jl:fig_garden_plotly",
       "call": "fig_garden_plotly(h=<NamedTuple>, ε=0.1, β=1.3)",
-      "called_from": "scripts/tourist_garden_figure.jl:201 (top-level scope)",
+      "called_from": "scripts/tourist_garden_figure.jl:202 (top-level scope)",
       "command": "julia --project=. -t 2 scripts/tourist_garden_figure.jl",
       "cwd": ".",
-      "date": "2026-11-07T15:12:19",
+      "date": "2026-11-07T15:20:10",
       "repo": "abm_sosno",
       "remote": "git@github.com:Sosnowsky/abm_sosno.git",
-      "commit": "a42938106a9197f1bda24b98136660fed69f42f9",
+      "commit": "deb0869eb6f8d51d5a29fabcebcad4b3cd042def",
       "uncommitted": [],
-      "purpose": "The garden figure (`fig_garden`) as an interactive Plotly figure for the note \"Why did we choose Taiwan?\": the same\nrun, lines and colours, now with a tooltip naming each destination and its expected visitors, zoom, legend entries\nthat hide or show a whole group (the winner, the 4 runners-up, the other 95, the even split), and buttons (top left, clear of Plotly's\ntoolbar at the top right) switching the y axis between log (as in the SVG, where 0 cannot be shown: it starts at 0.3) and linear. Colours are written as\nthe garden's tokens (`var(--accent)`, …), which the page resolves for its light or dark theme; numbers are rounded\nto 0.01 visitors to keep the file small."
+      "purpose": "The garden figure (`fig_garden`) as an interactive Plotly figure for the note \"Why did we choose Taiwan?\": the same\nrun, lines and colours, now with a tooltip naming each destination and its expected visitors, zoom, legend entries\nthat hide or show a whole group (the winner, the 4 runners-up, the other 95, the even split), and buttons (top left, clear of Plotly's\ntoolbar at the top right) switching the y axis between log (as in the SVG, where 0 cannot be shown: it starts at 0.3) and linear. Colours are written as\nthe garden's tokens (`var(--accent)`, …), which the page resolves for its light or dark theme; the run's parameters go in `layout.meta.caption`, which the garden shows as the caption; numbers are rounded\nto 0.01 visitors to keep the file small."
     },
     "tourist_conformity_garden.svg": {
       "producer": "scripts/tourist_garden_figure.jl:fig_garden",
       "call": "fig_garden(h=<NamedTuple>, ε=0.1, β=1.3, themes=<NamedTuple>)",
-      "called_from": "scripts/tourist_garden_figure.jl:200 (top-level scope)",
+      "called_from": "scripts/tourist_garden_figure.jl:201 (top-level scope)",
       "command": "julia --project=. -t 2 scripts/tourist_garden_figure.jl",
       "cwd": ".",
-      "date": "2026-11-07T15:12:16",
+      "date": "2026-11-07T15:20:07",
       "repo": "abm_sosno",
       "remote": "git@github.com:Sosnowsky/abm_sosno.git",
-      "commit": "a42938106a9197f1bda24b98136660fed69f42f9",
+      "commit": "deb0869eb6f8d51d5a29fabcebcad4b3cd042def",
       "uncommitted": [],
       "purpose": "Popularity under conformity for the garden's note \"Why did we choose Taiwan?\": each of the 100 destinations'\nexpected visitors per year (popularity × N) over 200 years at ε = 0.1, β = 1.3, from one seed. The destination that\neverybody ends up at is drawn in the accent colour, the 4 others whose popularity peaked highest (runners-up that\ngrow for a while and then collapse) in the second colour, the rest faint, with the even split (N/D = 10) dotted.\nThe y axis is pseudo-logarithmic, so both the early spread around 10 and the winner's 1000 can be read. It is the\nbottom row of `fig_time_evolution` with less on it (no ranking by the final year, no statistics), 200 years long\nbecause concentration takes about 115 years at ε(β − 1) = 0.03, and in the garden's colours, drawn for its light\nand its dark theme."
     },

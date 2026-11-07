@@ -39,6 +39,97 @@
       "commit": "7ddda4cff4ba0527056fda51eef98f76a927c0ad",
       "uncommitted": [],
       "purpose": "One country's history: coercion over time with crackdowns (ticks) and collapses of the\nauthority (vertical lines); the ns share q against the steady state of the current coercion,\nwhich it chases with a generational lag; and the trajectory in the (π, q) plane over the q*(π)\ncurve, coloured by time, so the sawtooths sit on the falling branches of q* and the rising\npart between them, (π_q̲, π_q̄), is crossed only in a few fast escalations."
+    },
+    "tourist_conformity_garden.svg": {
+      "producer": "scripts/tourist_garden_figure.jl:fig_garden",
+      "call": "fig_garden(h=<NamedTuple>, ε=0.1, β=1.3, themes=<NamedTuple>)",
+      "called_from": "scripts/tourist_garden_figure.jl:129 (top-level scope)",
+      "command": "julia --project=. -t auto scripts/tourist_garden_figure.jl",
+      "cwd": ".",
+      "date": "2026-11-07T14:52:34",
+      "repo": "abm_sosno",
+      "remote": "git@github.com:Sosnowsky/abm_sosno.git",
+      "commit": "076126bbcb4285b283641986b4632ed70d833855",
+      "uncommitted": [],
+      "purpose": "Popularity under conformity for the garden's note \"Why did we choose Taiwan?\": each of the 100 destinations'\nexpected visitors per year (popularity × N) over 200 years at ε = 0.1, β = 1.3, from one seed. The destination that\neverybody ends up at is drawn in the accent colour, the 4 others whose popularity peaked highest (runners-up that\ngrow for a while and then collapse) in the second colour, the rest faint, with the even split (N/D = 10) dotted.\nThe y axis is pseudo-logarithmic, so both the early spread around 10 and the winner's 1000 can be read. It is the\nbottom row of `fig_time_evolution` with less on it (no ranking by the final year, no statistics), 200 years long\nbecause concentration takes about 115 years at ε(β − 1) = 0.03, and in the garden's colours, drawn for its light\nand its dark theme."
+    },
+    "tourist_conformity_sweep.png": {
+      "producer": "scripts/tourist_conformity_sweep.jl:fig_conformity_sweep",
+      "call": "fig_conformity_sweep(yrs=<Array{Float64, 3} (3, 6, 10)>, epsilons=(0.1, 0.3, 1.0), betas=(1.05, 1.1, 1.2, 1.3, 1.45, 1.6), pop=<Vector{Vector{Float64}} (4,)>, n_runs=((1000, 1.3), (10000, 1.3), (1000, 1.0), (10000, 1.0)), pop_seeds=100)",
+      "called_from": "scripts/tourist_conformity_sweep.jl:140 (top-level scope)",
+      "command": "julia --project=. -t auto scripts/tourist_conformity_sweep.jl",
+      "cwd": ".",
+      "date": "2026-11-07T14:52:16",
+      "repo": "abm_sosno",
+      "remote": "git@github.com:Sosnowsky/abm_sosno.git",
+      "commit": "076126bbcb4285b283641986b4632ed70d833855",
+      "uncommitted": [],
+      "purpose": "Whether conformity (signal s_d ∝ c_d^β, β > 1) concentrates the tourists fast, and why. (a) Years\nuntil fewer than 2 effective destinations remain, mean ± s.d. over seeds, for three ε, against\nε(β − 1) on log–log axes: the three sets fall close to one curve, since near an even split the\nexcess popularity grows by 1 + ε(β − 1) a year (ε enters otherwise only through the size of the\nfirst fluctuations, logarithmically); lines are the linear-noise prediction. (b) The effective\nnumber of destinations over 100 years at ε = 0.3 for 1000 and 10 000 tourists, with conformity\n(β = 1.3, solid) and without (β = 1, dashed), as 1 / (mean Σp² over `pop_seeds` seeds; 8 seeds\nleft the curves visibly noisy), against the linear-noise prediction (dotted): with conformity\nten times more people only delay concentration by about a decade, without it they slow the\ndrift tenfold. Each panel's seed count is its subtitle, so the two titles line up.\nCategorical colours in fixed order."
+    },
+    "tourist_destinations.png": {
+      "producer": "scripts/tourist_destinations.jl:fig_time_evolution",
+      "call": "fig_time_evolution(runs=<Vector{@NamedTuple{visits::Matrix{Int64}, popularity::Matrix{Float64}}} (3,)>, columns=[(ε = 0.0,), (ε = 0.01,), (ε = 1.0,)], seed=1, rule=:additive, rank=:first, vmax=30, scale=<#identity>)",
+      "called_from": "scripts/tourist_destinations.jl:131 (top-level scope)",
+      "command": "julia --project=. -t auto scripts/tourist_destinations.jl",
+      "cwd": ".",
+      "date": "2026-11-07T14:50:31",
+      "repo": "abm_sosno",
+      "remote": "git@github.com:Sosnowsky/abm_sosno.git",
+      "commit": "076126bbcb4285b283641986b4632ed70d833855",
+      "uncommitted": [],
+      "purpose": "How the chosen destinations evolve over 100 years, one column per parameter set, from the same\nseed (same tastes, same first year), for one update rule (`rule`: additive, mixing, or mixing\nwith conformity). Top: visitors to each destination each year. Under the additive rule\n(`rank = :first`) the rows of every panel are ranked by the shared year-1 visitors, so a gradient\nthat survives to the right is year 1's luck locked in. Under the mixing rules (`rank = :last`)\neach panel is ranked by its own final popularity, since year 1 no longer predicts it, so the\npanel shows the winners emerging and the losers dying out. `scale = Makie.pseudolog10`, on the\ncolours and on the bottom row's y axis, keeps both 10 and 100+ visitors readable when a few\ndestinations take most tourists. Bottom: each destination's expected visitors per year (its\npopularity × N), the noise-free version of the rows above, with the 5 destinations first and\nlast in that ranking highlighted. Subtitles give the effective number of destinations in the\nfinal year, how many got any visitor, and the correlation between year-1 visitors and final\npopularity."
+    },
+    "tourist_destinations_conformity.png": {
+      "producer": "scripts/tourist_destinations.jl:fig_time_evolution",
+      "call": "fig_time_evolution(runs=<Vector{@NamedTuple{visits::Matrix{Int64}, popularity::Matrix{Float64}}} (3,)>, columns=[(ε = 0.3, β = 1.0), (ε = 0.3, β = 1.1), (ε = 0.3, β = 1.3)], seed=1, rule=:conformity, rank=:last, vmax=1000, scale=<ReversibleScale>)",
+      "called_from": "scripts/tourist_destinations.jl:131 (top-level scope)",
+      "command": "julia --project=. -t auto scripts/tourist_destinations.jl",
+      "cwd": ".",
+      "date": "2026-11-07T14:50:34",
+      "repo": "abm_sosno",
+      "remote": "git@github.com:Sosnowsky/abm_sosno.git",
+      "commit": "076126bbcb4285b283641986b4632ed70d833855",
+      "uncommitted": [],
+      "purpose": "How the chosen destinations evolve over 100 years, one column per parameter set, from the same\nseed (same tastes, same first year), for one update rule (`rule`: additive, mixing, or mixing\nwith conformity). Top: visitors to each destination each year. Under the additive rule\n(`rank = :first`) the rows of every panel are ranked by the shared year-1 visitors, so a gradient\nthat survives to the right is year 1's luck locked in. Under the mixing rules (`rank = :last`)\neach panel is ranked by its own final popularity, since year 1 no longer predicts it, so the\npanel shows the winners emerging and the losers dying out. `scale = Makie.pseudolog10`, on the\ncolours and on the bottom row's y axis, keeps both 10 and 100+ visitors readable when a few\ndestinations take most tourists. Bottom: each destination's expected visitors per year (its\npopularity × N), the noise-free version of the rows above, with the 5 destinations first and\nlast in that ranking highlighted. Subtitles give the effective number of destinations in the\nfinal year, how many got any visitor, and the correlation between year-1 visitors and final\npopularity."
+    },
+    "tourist_destinations_mixing.png": {
+      "producer": "scripts/tourist_destinations.jl:fig_time_evolution",
+      "call": "fig_time_evolution(runs=<Vector{@NamedTuple{visits::Matrix{Int64}, popularity::Matrix{Float64}}} (3,)>, columns=[(ε = 0.1,), (ε = 0.3,), (ε = 1.0,)], seed=1, rule=:mixing, rank=:last, vmax=300, scale=<ReversibleScale>)",
+      "called_from": "scripts/tourist_destinations.jl:131 (top-level scope)",
+      "command": "julia --project=. -t auto scripts/tourist_destinations.jl",
+      "cwd": ".",
+      "date": "2026-11-07T14:50:33",
+      "repo": "abm_sosno",
+      "remote": "git@github.com:Sosnowsky/abm_sosno.git",
+      "commit": "076126bbcb4285b283641986b4632ed70d833855",
+      "uncommitted": [],
+      "purpose": "How the chosen destinations evolve over 100 years, one column per parameter set, from the same\nseed (same tastes, same first year), for one update rule (`rule`: additive, mixing, or mixing\nwith conformity). Top: visitors to each destination each year. Under the additive rule\n(`rank = :first`) the rows of every panel are ranked by the shared year-1 visitors, so a gradient\nthat survives to the right is year 1's luck locked in. Under the mixing rules (`rank = :last`)\neach panel is ranked by its own final popularity, since year 1 no longer predicts it, so the\npanel shows the winners emerging and the losers dying out. `scale = Makie.pseudolog10`, on the\ncolours and on the bottom row's y axis, keeps both 10 and 100+ visitors readable when a few\ndestinations take most tourists. Bottom: each destination's expected visitors per year (its\npopularity × N), the noise-free version of the rows above, with the 5 destinations first and\nlast in that ranking highlighted. Subtitles give the effective number of destinations in the\nfinal year, how many got any visitor, and the correlation between year-1 visitors and final\npopularity."
+    },
+    "tourist_influence_sweep.png": {
+      "producer": "scripts/tourist_influence_sweep.jl:fig_influence_sweep",
+      "call": "fig_influence_sweep(res=<NamedTuple>, epsilons=<Vector{Float64} (16,)>, years=100, n_tourists=1000, n_destinations=100)",
+      "called_from": "scripts/tourist_influence_sweep.jl:94 (top-level scope)",
+      "command": "julia --project=. -t auto scripts/tourist_influence_sweep.jl",
+      "cwd": ".",
+      "date": "2026-11-07T14:50:56",
+      "repo": "abm_sosno",
+      "remote": "git@github.com:Sosnowsky/abm_sosno.git",
+      "commit": "076126bbcb4285b283641986b4632ed70d833855",
+      "uncommitted": [],
+      "purpose": "The ABM against the Pólya-urn prediction across the influence parameter ε, after 100 years,\nmean ± s.d. over seeds. (a) The effective number of destinations of the popularity, on its full\nscale from 1 (everyone goes to the same place) to D: it falls only to the strong-influence limit\nD/(1 + (D−1)Σ1/t²/N), about 86 for N = 1000, D = 100, so no ε makes this model concentrate.\n(b) How much of the final popularity is year 1's luck: the correlation between year-1 visitors\nand the final popularity, rising from 1/√T at weak influence to 0.78 at strong."
+    },
+    "tourist_mixing_sweep.png": {
+      "producer": "scripts/tourist_mixing_sweep.jl:fig_mixing_sweep",
+      "call": "fig_mixing_sweep(s2=<Matrix{Float64} (20, 20)>, epsilons=0.05:0.05:1.0, years=100, long=<Vector{Vector{Float64}} (3,)>, long_runs=((:mixing, 0.3), (:mixing, 1.0), (:additive, 1.0)), n_tourists=1000, n_destinations=100)",
+      "called_from": "scripts/tourist_mixing_sweep.jl:121 (top-level scope)",
+      "command": "julia --project=. -t auto scripts/tourist_mixing_sweep.jl",
+      "cwd": ".",
+      "date": "2026-11-07T14:51:31",
+      "repo": "abm_sosno",
+      "remote": "git@github.com:Sosnowsky/abm_sosno.git",
+      "commit": "076126bbcb4285b283641986b4632ed70d833855",
+      "uncommitted": [],
+      "purpose": "Whether the mixing rule concentrates the tourists, as the effective number of destinations\n1/Σp² of the popularity (1 = everyone at one place, D = an even split). (a) After 100 years\nacross ε: one faint dot per seed, the seed average as 1/⟨Σp²⟩, and the neutral-drift prediction\n1/(1 − (1 − 1/D)(1 − ε²/N)^T); the dashed line is the most the additive rule can concentrate,\nat any ε. (b) Over 5000 years on log–log axes (grey line: year 100), seed averages against their\nmean-field predictions: the mixing rule drifts towards one destination on a time scale of N/ε² years, while\nthe additive rule freezes within a few years. Categorical colours in fixed order, black dotted\nlines for the predictions."
     }
   }
 }

@@ -1,4 +1,4 @@
-# The conformity run as a figure for the garden's note "Why did we choose Taiwan?": the expected visitors per year
+# The conformity run as a figure for the garden's note "Why did we choose Taiwan?": the number of visitors per year
 # of each of the 100 destinations over 200 years at ε = 0.1, β = 1.3. It is the bottom row of
 # plots/tourist_destinations_conformity.png with less on it, written as an SVG in the garden's colours that follows
 # the reader's light or dark theme.
@@ -25,11 +25,13 @@ const N_RUNNERS_UP = 4
 const OUT = joinpath(@__DIR__, "..", "plots", "tourist_conformity_garden.svg")
 const OUT_PLOTLY = joinpath(@__DIR__, "..", "plots", "tourist_conformity_garden.plotly.json")
 # The garden's colour tokens (sosno-garden, assets/garden.css), so the figure reads as part of the page.
+# The two series are Okabe–Ito vermillion and blue (colour-blind safe, the same in both themes) and differ in line style
+# too (solid, dashed), so the shape alone tells them apart.
 const THEMES = (
     light = (ink = colorant"#18221d", muted = colorant"#5b6a61", rule = colorant"#cdd6cf",
-        winner = colorant"#b8432c", runners = colorant"#2f6a4c"),
+        winner = colorant"#D55E00", runners = colorant"#0072B2"),
     dark = (ink = colorant"#e2e9e3", muted = colorant"#9aaba0", rule = colorant"#2e3a33",
-        winner = colorant"#e0694f", runners = colorant"#7cc3a0"),
+        winner = colorant"#D55E00", runners = colorant"#0072B2"),
 )
 
 """
@@ -88,7 +90,7 @@ function draw_popularity(h, c; ε, β)
 
     fig = Figure(size = (700, 430), fontsize = 17, backgroundcolor = :transparent, figure_padding = (4, 14, 4, 4))
     ax = Axis(fig[3, 1]; backgroundcolor = :transparent, yscale = Makie.pseudolog10,
-        yticks = [0, 1, 3, 10, 30, 100, 300, 1000], xticks = 0:50:T, xlabel = "year", ylabel = "expected visitors per year",
+        yticks = [0, 1, 3, 10, 30, 100, 300, 1000], xticks = 0:50:T, xlabel = "year", ylabel = "number of visitors",
         xgridcolor = c.rule, ygridcolor = c.rule, xgridwidth = 1, ygridwidth = 1,
         leftspinecolor = c.rule, bottomspinecolor = c.rule, topspinevisible = false, rightspinevisible = false,
         xtickcolor = c.rule, ytickcolor = c.rule, xticklabelcolor = c.muted, yticklabelcolor = c.muted,
@@ -97,14 +99,14 @@ function draw_popularity(h, c; ε, β)
         lines!(ax, 1:T, pop[d, :]; color = faint, linewidth = 0.8)
     end
     for d in runners
-        lines!(ax, 1:T, pop[d, :]; color = c.runners, linewidth = 2)
+        lines!(ax, 1:T, pop[d, :]; color = c.runners, linewidth = 2, linestyle = :dash)
     end
     lines!(ax, 1:T, pop[winner, :]; color = c.winner, linewidth = 3)
     hlines!(ax, [N / D]; color = c.ink, linestyle = :dot, linewidth = 1.3)
     limits!(ax, 0, T, 0, 1.15N)
 
     Legend(fig[2, 1],
-        [LineElement(color = c.winner, linewidth = 3), LineElement(color = c.runners, linewidth = 2),
+        [LineElement(color = c.winner, linewidth = 3), LineElement(color = c.runners, linewidth = 2, linestyle = :dash),
             LineElement(color = faint, linewidth = 1.5), LineElement(color = c.ink, linestyle = :dot, linewidth = 1.3)],
         ["where everybody ends up", "the $N_RUNNERS_UP runners-up", "the other $(length(others))",
             "even split, $(N ÷ D) per destination"];
@@ -118,8 +120,8 @@ end
 
 """
 Popularity under conformity for the garden's note "Why did we choose Taiwan?": each of the 100 destinations'
-expected visitors per year (popularity × N) over 200 years at ε = 0.1, β = 1.3, from one seed. The destination that
-everybody ends up at is drawn in the accent colour, the 4 others whose popularity peaked highest (runners-up that
+number of visitors per year (popularity × N) over 200 years at ε = 0.1, β = 1.3, from one seed. The destination that
+everybody ends up at is drawn in Okabe–Ito vermillion, the 4 others whose popularity peaked highest (runners-up that
 grow for a while and then collapse) in the second colour, the rest faint, with the even split (N/D = 10) dotted.
 The y axis is pseudo-logarithmic, so both the early spread around 10 and the winner's 1000 can be read. It is the
 bottom row of `fig_time_evolution` with less on it (no ranking by the final year, no statistics), 200 years long
@@ -144,10 +146,10 @@ end
 
 """
 The garden figure (`fig_garden`) as an interactive Plotly figure for the note "Why did we choose Taiwan?": the same
-run, lines and colours, now with a tooltip naming each destination and its expected visitors, zoom, legend entries
+run, lines, colours and line styles, now with a tooltip naming each destination and its visitors, zoom, legend entries
 that hide or show a whole group (the winner, the 4 runners-up, the other 95, the even split), and buttons (top left, clear of Plotly's
 toolbar at the top right) switching the y axis between log (as in the SVG, where 0 cannot be shown: it starts at 0.3) and linear. Colours are written as
-the garden's tokens (`var(--accent)`, …), which the page resolves for its light or dark theme; the run's parameters go in `layout.meta.caption`, which the garden shows as the caption; numbers are rounded
+the garden's tokens (`var(--oi-vermillion)`, …), which the page resolves for its light or dark theme; the run's parameters go in `layout.meta.caption`, which the garden shows as the caption; numbers are rounded
 to 0.01 visitors to keep the file small.
 """
 @provenance function fig_garden_plotly(h; ε, β)
@@ -160,19 +162,19 @@ to 0.01 visitors to keep the file small.
     runners = partialsortperm(peak, 1:N_RUNNERS_UP; rev = true)
     others = setdiff(1:D, winner, runners)
     years = collect(1:T)
-    hover = "destination %{meta}<br>year %{x}: %{y:.1f} visitors<extra></extra>"
-    line(d, group, name, color, width, first; opacity = 1.0) = Dict{String,Any}(
+    hover = "destination %{meta}<br>year %{x}: %{y:.0f} visitors<extra></extra>"
+    line(d, group, name, color, width, first; opacity = 1.0, dash = "solid") = Dict{String,Any}(
         "type" => "scatter", "mode" => "lines", "x" => years, "y" => round.(pop[d, :], digits = 2),
         "name" => name, "legendgroup" => group, "showlegend" => first, "meta" => d, "hovertemplate" => hover,
-        "opacity" => opacity, "line" => Dict("color" => color, "width" => width))
+        "opacity" => opacity, "line" => Dict("color" => color, "width" => width, "dash" => dash))
     data = Dict{String,Any}[]
     for (i, d) in enumerate(others)
         push!(data, line(d, "others", "the other $(length(others))", "var(--muted)", 0.8, i == 1; opacity = 0.35))
     end
     for (i, d) in enumerate(runners)
-        push!(data, line(d, "runners", "the $N_RUNNERS_UP runners-up", "var(--moss)", 2, i == 1))
+        push!(data, line(d, "runners", "the $N_RUNNERS_UP runners-up", "var(--oi-blue)", 2, i == 1; dash = "dash"))
     end
-    push!(data, line(winner, "winner", "where everybody ends up", "var(--accent)", 3, true))
+    push!(data, line(winner, "winner", "where everybody ends up", "var(--oi-vermillion)", 3, true))
     push!(data, Dict{String,Any}("type" => "scatter", "mode" => "lines", "x" => [1, T], "y" => [N / D, N / D],
         "name" => "even split, $(N ÷ D) per destination", "hoverinfo" => "skip",
         "line" => Dict("color" => "var(--ink)", "width" => 1.3, "dash" => "dot")))
@@ -182,7 +184,7 @@ to 0.01 visitors to keep the file small.
         "hovermode" => "closest",
         "margin" => Dict("t" => 40),
         "xaxis" => Dict("title" => Dict("text" => "year"), "range" => [0, T]),
-        "yaxis" => Dict("title" => Dict("text" => "expected visitors per year"), "type" => "log", "range" => logrange,
+        "yaxis" => Dict("title" => Dict("text" => "number of visitors"), "type" => "log", "range" => logrange,
             "tickvals" => [1, 3, 10, 30, 100, 300, 1000]),
         # at the bottom of the whole figure, not of the plot, so it never runs into the axis title when it wraps on a phone
         "legend" => Dict("orientation" => "h", "x" => 0, "xanchor" => "left", "yref" => "container", "y" => 0,

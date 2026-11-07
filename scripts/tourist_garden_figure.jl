@@ -147,7 +147,7 @@ The garden figure (`fig_garden`) as an interactive Plotly figure for the note "W
 run, lines and colours, now with a tooltip naming each destination and its expected visitors, zoom, legend entries
 that hide or show a whole group (the winner, the 4 runners-up, the other 95, the even split), and buttons (top left, clear of Plotly's
 toolbar at the top right) switching the y axis between log (as in the SVG, where 0 cannot be shown: it starts at 0.3) and linear. Colours are written as
-the garden's tokens (`var(--accent)`, …), which the page resolves for its light or dark theme; numbers are rounded
+the garden's tokens (`var(--accent)`, …), which the page resolves for its light or dark theme; the run's parameters go in `layout.meta.caption`, which the garden shows as the caption; numbers are rounded
 to 0.01 visitors to keep the file small.
 """
 @provenance function fig_garden_plotly(h; ε, β)
@@ -184,10 +184,11 @@ to 0.01 visitors to keep the file small.
         "xaxis" => Dict("title" => Dict("text" => "year"), "range" => [0, T]),
         "yaxis" => Dict("title" => Dict("text" => "expected visitors per year"), "type" => "log", "range" => logrange,
             "tickvals" => [1, 3, 10, 30, 100, 300, 1000]),
-        "legend" => Dict("orientation" => "h", "x" => 0, "y" => -0.2, "yanchor" => "top"),
-        "annotations" => [Dict("text" => "$N tourists, $D destinations, influence ε = $ε, conformity β = $β",
-            "xref" => "paper", "yref" => "paper", "x" => 0, "xshift" => 108, "y" => 1.04, "xanchor" => "left",
-            "yanchor" => "bottom", "showarrow" => false, "font" => Dict("color" => "var(--muted)"))],
+        # at the bottom of the whole figure, not of the plot, so it never runs into the axis title when it wraps on a phone
+        "legend" => Dict("orientation" => "h", "x" => 0, "xanchor" => "left", "yref" => "container", "y" => 0,
+            "yanchor" => "bottom"),
+        # shown by the garden as the figure's caption, which wraps on narrow screens (a Plotly title does not)
+        "meta" => Dict("caption" => "$N tourists, $D destinations, influence ε = $ε, conformity β = $β."),
         "updatemenus" => [Dict("type" => "buttons", "direction" => "right", "showactive" => true, "active" => 0,
             "x" => 0, "xanchor" => "left", "y" => 1.03, "yanchor" => "bottom", "pad" => Dict("r" => 0, "t" => 0),
             "bgcolor" => "var(--panel)", "bordercolor" => "var(--rule)", "font" => Dict("color" => "var(--ink)"),

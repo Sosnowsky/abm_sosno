@@ -145,8 +145,8 @@ end
 """
 The garden figure (`fig_garden`) as an interactive Plotly figure for the note "Why did we choose Taiwan?": the same
 run, lines and colours, now with a tooltip naming each destination and its expected visitors, zoom, legend entries
-that hide or show a whole group (the winner, the 4 runners-up, the other 95, the even split), and buttons switching
-the y axis between log (as in the SVG, where 0 cannot be shown: it starts at 0.3) and linear. Colours are written as
+that hide or show a whole group (the winner, the 4 runners-up, the other 95, the even split), and buttons (top left, clear of Plotly's
+toolbar at the top right) switching the y axis between log (as in the SVG, where 0 cannot be shown: it starts at 0.3) and linear. Colours are written as
 the garden's tokens (`var(--accent)`, …), which the page resolves for its light or dark theme; numbers are rounded
 to 0.01 visitors to keep the file small.
 """
@@ -186,10 +186,10 @@ to 0.01 visitors to keep the file small.
             "tickvals" => [1, 3, 10, 30, 100, 300, 1000]),
         "legend" => Dict("orientation" => "h", "x" => 0, "y" => -0.2, "yanchor" => "top"),
         "annotations" => [Dict("text" => "$N tourists, $D destinations, influence ε = $ε, conformity β = $β",
-            "xref" => "paper", "yref" => "paper", "x" => 0, "y" => 1.04, "xanchor" => "left", "yanchor" => "bottom",
-            "showarrow" => false, "font" => Dict("color" => "var(--muted)"))],
+            "xref" => "paper", "yref" => "paper", "x" => 0, "xshift" => 108, "y" => 1.04, "xanchor" => "left",
+            "yanchor" => "bottom", "showarrow" => false, "font" => Dict("color" => "var(--muted)"))],
         "updatemenus" => [Dict("type" => "buttons", "direction" => "right", "showactive" => true, "active" => 0,
-            "x" => 1, "xanchor" => "right", "y" => 1.03, "yanchor" => "bottom", "pad" => Dict("r" => 0, "t" => 0),
+            "x" => 0, "xanchor" => "left", "y" => 1.03, "yanchor" => "bottom", "pad" => Dict("r" => 0, "t" => 0),
             "bgcolor" => "var(--panel)", "bordercolor" => "var(--rule)", "font" => Dict("color" => "var(--ink)"),
             "buttons" => [button("log", Dict("yaxis.type" => "log", "yaxis.range" => logrange)),
                 button("linear", Dict("yaxis.type" => "linear", "yaxis.range" => [0, 1.15N]))])])
